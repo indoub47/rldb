@@ -1,0 +1,28 @@
+{
+  "name": "rldb",
+  "version": "1.0.0",
+  "description": "railway database server side",
+  "main": "server.js",
+  "scripts": {
+    "server": "node server.js",
+    "server_redundant": "cd ./server-express && npm run start",
+    "client": "cd ./client && npm run start",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/indoub47/rldb-js.git"
+  },
+  "author": "indoub47",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^5.4.0",
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "jsonwebtoken": "^8.3.0",
+    "passport": "^0.4.0",
+    "passport-jwt": "^4.0.0",
+    "validator": "^10.8.0"
+  }
+}
