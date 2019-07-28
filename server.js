@@ -1,6 +1,7 @@
 "use strict";
 
 const express = require("express");
+const path = require("path");
 const bodyParser = require("body-parser");
 const passport = require("passport");
 const secret = require("./config/secret");
@@ -35,13 +36,22 @@ app.use("/api/things", things);
 app.use("/api/fsqueries", fsqueries);
 app.use("/api/operinput", operinput);
 //app.use("/api/report", reports);
-app.use("/", express.static("../client/"));
+//app.use("/", express.static("./client/"));
+
+// Server static assets in production
+if (process.env.NODE_ENV === "production") {
+  // Set static folder
+  app.use(express.static("client/build"));
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
+  });
+}
 
 /**
  * Start listening on port 3000
  */
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
- console.log(`Node express server is running on port ${PORT}!`);
+  console.log(`Node express server is running on port ${PORT}!`);
 });
