@@ -242,7 +242,7 @@ function validateItem(main, journal, itype, insert) {
   });
 
   journal.update && journal.update.forEach(journalItem => {
-    result = validateItemPart(journalItem, journalModel, insert);   
+    result = validateItemPart(journalItem, journalModel, false);   
     if (result.errors) {
       allErrors.push(result.errors);
     } else {

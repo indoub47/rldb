@@ -15,7 +15,8 @@ const modifyExistingRecord = (
   }
 
   item.journal = vResult.item.journal;
-  item.journal.jid = Date.now();
+  // delete item.journal.jid; // jo neįtrauks vistiek, nes yra exclude
+  //item.journal.jid = Date.now();
 
   // check if exists
   // check if the same version
@@ -55,7 +56,8 @@ const createNewRecord = (
   item.main = vResult.item.main;
   item.main.regbit = regbit;
   item.journal = vResult.item.journal;
-  item.journal.jid = Date.now();
+  // delete item.journal.jid; // jo neįtrauks vistiek, nes yra exclude
+  //item.journal.jid = Date.now();
   
 
   // check for same location

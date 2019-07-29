@@ -1,7 +1,7 @@
 function fetchResult(msgAtliktas) {
   // must go after getCollections middleware!
   return function(req, res) {
-    const {coll, mainId, draftMain, drafJournal, db} = res.locals;
+    const {coll, mainId, draftMain, draftJournal, db} = res.locals;
     try {
       const resultMain = db.prepare(`SELECT * FROM ${coll.tables.main.name} WHERE id = ?`).get(mainId);
       const resultJournal = db.prepare(`SELECT * FROM ${coll.tables.journal.name} WHERE mainid = ?`).all(mainId);

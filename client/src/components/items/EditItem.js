@@ -201,6 +201,8 @@ class EditItem extends Component {
     // Duodamas JournalListui
     // state.journal[index] kopijuojamas į state.jItem
     const jid = e.target.dataset.jid;
+    console.log("e.target.dataset.jid", jid);
+    console.log("this.state.journal", this.state.journal);
     const jItem = this.state.journal.find(
       j => j.jid.toString() === jid.toString()
     );

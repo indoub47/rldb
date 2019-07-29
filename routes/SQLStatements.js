@@ -15,7 +15,7 @@ const exclude = {
       }, 
       insert: {
         main: ["id"],
-        journal: [],
+        journal: ["jid"],
       }
     }; 
 

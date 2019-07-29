@@ -147,8 +147,15 @@ router.post(
 
     // same place not found, update item
     main.v += 1;
-    journal.insert && journal.insert.forEach(i => (i.mainid = mainId));
-    journal.update && journal.update.forEach(i => (i.mainid = mainId));
+    journal.insert &&
+      journal.insert.forEach(j => {
+        j.mainid = mainId;
+        //delete j.jid; // nėra reikalo, nes yra exclude
+      });
+    journal.update &&
+      journal.update.forEach(j => {
+        j.mainid = mainId;
+      });
     const updateItem = asTransaction(transactions.update);
     let returnRef = {};
     //console.log("journal.insert before update", journal.insert);
@@ -199,10 +206,11 @@ router.put(
 
     let main = result.item.main;
     let journal = result.item.journal;
+    // delete journal.jid; // nėra reikalo, nes yra exclude
 
     main.regbit = req.user.regbit;
     main.v = 0;
-    delete main.id;
+    // delete main.id; // nėra reikalo, nes yra exclude
 
     // check if there exist some record with the same place
     let ref = {};

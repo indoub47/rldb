@@ -47,10 +47,6 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-/**
- * Start listening on port 3000
- */
-
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Node express server is running on port ${PORT}!`);
