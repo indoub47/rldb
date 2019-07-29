@@ -1,4 +1,4 @@
-const absent = val => (val == null ? "" : val);
+import {absent} from "../../../utils/absentProps";
 
 const pad = (num, size = 2) => {
   if (num == null || num === "") return "-".repeat(size);

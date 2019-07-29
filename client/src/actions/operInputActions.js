@@ -10,6 +10,7 @@ import {
   OPERINPUT_ITEMS_SEARCH_SUCCESS,
   OPERINPUT_ITEMS_SEARCH_FAILURE,
   OPERINPUT_CLEAR,
+  OPERINPUT_CLEAR_FOUND,
   OPERINPUT_INFO_REMOVE,
   OPERINPUT_SEARCH_INFO_REMOVE,
   OPERINPUT_SET_ITEMS
@@ -124,3 +125,7 @@ export const supplyOperInput = (input, itype) => dispatch => {
 export const clearOperInput = () => dispatch => {
   dispatch({ type: OPERINPUT_CLEAR });
 };
+
+export const clearFound = () => dispatch => {
+  dispatch({type: OPERINPUT_CLEAR_FOUND});
+}

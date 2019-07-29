@@ -9,6 +9,7 @@ import {
   OPERINPUT_ITEMS_SEARCH_SUCCESS,
   OPERINPUT_ITEMS_SEARCH_FAILURE,
   OPERINPUT_CLEAR,
+  OPERINPUT_CLEAR_FOUND,
   OPERINPUT_INFO_REMOVE,
   OPERINPUT_SEARCH_INFO_REMOVE,
   OPERINPUT_SET_ITEMS,
@@ -85,6 +86,13 @@ export default function(state = initialState, action) {
         foundItems: [],
         searchInfo: { message: action.payload.msg, type: action.payload.type },
         isLoading: false
+      };
+    
+    case OPERINPUT_CLEAR_FOUND:
+      return {
+        ...state,
+        foundItems: [],
+        searchInfo: null
       };
 
     case OPERINPUT_CLEAR:

@@ -2,11 +2,11 @@ import React from "react";
 import TextFieldGroup from "../../../common/TextFieldGroup";
 import SelectInputGroup from "../../../common/SelectInputGroup";
 import Alert from "../../../common/Alert";
-import absent from "../../../../utils/splitAbsent";
+import {absentMulti} from "../../../../utils/absentProps";
 
 const EditForm = ({ item, onChange, options, errors }) => {
   //console.log("item in EditForm", item);
-  //console.log("absent meistrija", absent(item, "main", "meistrija"));
+  //console.log("absent meistrija", absentMulti(item, "main", "meistrija"));
   const edit = item && item.main && item.main.id > 0;
   
   return (
@@ -18,7 +18,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           name="main.meistrija"
           label="Meistrija"
           divClassname="form-group col-4"
-          value={absent(item, "main", "meistrija")}
+          value={absentMulti(item, "main", "meistrija")}
           options={options.meistrija}
           onChange={onChange}
           disabled={edit}
@@ -29,7 +29,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           name="main.kkateg"
           label="Kelio kategorija"
           divClassname="form-group col-4"
-          value={absent(item, "main", "kkateg")}
+          value={absentMulti(item, "main", "kkateg")}
           options={options.kkateg}
           onChange={onChange}
           disabled={edit}
@@ -42,7 +42,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           divClassname="form-group col-4"
           name="main.btipas"
           label="Bėgio tipas"
-          value={absent(item, "main", "btipas")}
+          value={absentMulti(item, "main", "btipas")}
           options={options.btipas}
           onChange={onChange}
           disabled={edit}
@@ -53,7 +53,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           divClassname="form-group col-4"
           name="main.bgamykl"
           label="Bėgio gamykla"
-          value={absent(item, "main", "bgamykl")}
+          value={absentMulti(item, "main", "bgamykl")}
           options={options.bgamykl}
           onChange={onChange}
           disabled={edit}
@@ -65,7 +65,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           id="defect-bmetai"
           name="main.bmetai"
           placeholder="Bėgio gam. metai"
-          value={absent(item, "main", "bmetai")}
+          value={absentMulti(item, "main", "bmetai")}
           onChange={onChange}
           readonly={edit}
           error={errors.bmetai}
@@ -79,7 +79,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           id="defect-linija"
           name="main.linija"
           placeholder="Linija"
-          value={absent(item, "main", "linija")}
+          value={absentMulti(item, "main", "linija")}
           onChange={onChange}
           readonly={edit}
           error={errors.linija}
@@ -90,7 +90,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           id="defect-kelias"
           name="main.kelias"
           placeholder="Kelio Nr."
-          value={absent(item, "main", "kelias")}
+          value={absentMulti(item, "main", "kelias")}
           onChange={onChange}
           readonly={edit}
           error={errors.kelias}
@@ -101,7 +101,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           id="defect-km"
           name="main.km"
           placeholder="km"
-          value={absent(item, "main", "km")}
+          value={absentMulti(item, "main", "km")}
           onChange={onChange}
           readonly={edit}
           error={errors.km}
@@ -112,7 +112,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           id="defect-pk"
           name="main.pk"
           placeholder="pk"
-          value={absent(item, "main", "pk")}
+          value={absentMulti(item, "main", "pk")}
           onChange={onChange}
           readonly={edit}
           error={errors.pk}
@@ -123,7 +123,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           id="defect-m"
           name="main.m"
           placeholder="m"
-          value={absent(item, "main", "m")}
+          value={absentMulti(item, "main", "m")}
           onChange={onChange}
           readonly={edit}
           error={errors.m}
@@ -133,7 +133,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           divClassname="form-group col-2"
           name="main.siule"
           label="Siūlė"
-          value={absent(item, "main", "siule")}
+          value={absentMulti(item, "main", "siule")}
           options={options.siule}
           onChange={onChange}
           disabled={edit}
@@ -147,7 +147,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           type="date"
           id="defect-data"
           name="journal.data"
-          value={absent(item, "journal", "data")}
+          value={absentMulti(item, "journal", "data")}
           onChange={onChange}
           error={errors.data}
         />
@@ -156,7 +156,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           name="journal.oper"
           label="Operatorius"
           divClassname="form-group col-4"
-          value={absent(item, "journal", "oper")}
+          value={absentMulti(item, "journal", "oper")}
           options={options.oper}
           onChange={onChange}
           error={errors.oper}
@@ -166,7 +166,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           name="journal.apar"
           label="Defektoskopas"
           divClassname="form-group col-4"
-          value={absent(item, "journal", "apar")}
+          value={absentMulti(item, "journal", "apar")}
           options={options.apar}
           onChange={onChange}
           error={errors.apar}
@@ -179,7 +179,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           id="defect-kodas"
           name="journal.kodas"
           placeholder="Kodas"
-          value={absent(item, "journal", "kodas")}
+          value={absentMulti(item, "journal", "kodas")}
           onChange={onChange}
           error={errors.kodas}
         />
@@ -189,7 +189,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           id="defect-dl"
           name="journal.dl"
           placeholder="L"
-          value={absent(item, "journal", "dl")}
+          value={absentMulti(item, "journal", "dl")}
           onChange={onChange}
           error={errors.dl}
         />
@@ -199,7 +199,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           id="defect-dh"
           name="journal.dh"
           placeholder="H"
-          value={absent(item, "journal", "dh")}
+          value={absentMulti(item, "journal", "dh")}
           onChange={onChange}
           error={errors.dh}
         />
@@ -208,7 +208,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           name="journal.pavoj"
           label="Pavojingumas"
           divClassname="form-group col-3"
-          value={absent(item, "journal", "pavoj")}
+          value={absentMulti(item, "journal", "pavoj")}
           options={options.pavoj}
           onChange={onChange}
           error={errors.pavoj}
@@ -221,7 +221,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           type="date"
           id="defect-dtermin"
           name="journal.dtermin"
-          value={absent(item, "journal", "dtermin")}
+          value={absentMulti(item, "journal", "dtermin")}
           onChange={onChange}
           error={errors.termin}
         />
@@ -231,7 +231,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           id="defect-note"
           name="journal.note"
           placeholder="Pastaba"
-          value={absent(item, "journal", "note")}
+          value={absentMulti(item, "journal", "note")}
           onChange={onChange}
           error={errors.note}
         />

@@ -92,7 +92,7 @@ class EditItem extends Component {
       ),
       itemStatus: createOptions(
         this.props.things.itemstatus.sort((b1, b2) => b1.id - b2.id),
-        "-- nenurodyta --",
+        null,
         x => x.id + ", " + x.name
       )
     };

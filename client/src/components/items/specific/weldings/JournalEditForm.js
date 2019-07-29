@@ -2,7 +2,7 @@ import React from "react";
 import Alert from "../../../common/Alert";
 import TextFieldGroup from "../../../common/TextFieldGroup";
 import SelectInputGroup from "../../../common/SelectInputGroup";
-import absent from "../../../../utils/absent-props";
+import {absent} from "../../../../utils/absentProps";
 
 const JournalEditForm = ({ jItem, onChange, options, submitJItem, cancelJItem, alert }) => {
 

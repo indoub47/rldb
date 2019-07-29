@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { createReport } from "../../../actions/reportActions";
 import { connect } from "react-redux";
 import TextFieldGroup from "../../common/TextFieldGroup";
-import absent from "../../../utils/absent-props";
+import {absent} from "../../../utils/absentProps";
 
 export class ActiveDefectsParamsCollector extends Component {
   constructor(props) {

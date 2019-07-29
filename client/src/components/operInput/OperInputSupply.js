@@ -10,6 +10,7 @@ import {
   searchItems,
   supplyOperInput,
   clearOperInput,
+  clearFound,
   removeInfo,
   removeSearchInfo
 } from "../../actions/operInputActions";
@@ -57,8 +58,11 @@ class OperInputSupply extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.itype !== this.props.itype) {
-      this.#options = itemSpecific[this.props.itype].options(this.props.things);      
+      this.#options = itemSpecific[this.props.itype].options(this.props.things);    
+      this.props.clearFound();  
+      this.setState({searchInputErrors: {}, showSearchModal: false});
       this.props.fetchUnapprovedOperInput(this.props.itype);
+
     }
   }
 
@@ -371,6 +375,7 @@ export default connect(
     setItems,
     supplyOperInput,
     clearOperInput,
+    clearFound,
     removeInfo,
     removeSearchInfo
   }

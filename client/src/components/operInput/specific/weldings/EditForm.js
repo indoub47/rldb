@@ -2,11 +2,11 @@ import React from "react";
 import TextFieldGroup from "../../../common/TextFieldGroup";
 import SelectInputGroup from "../../../common/SelectInputGroup";
 import Alert from "../../../common/Alert";
-import absent from "../../../../utils/splitAbsent";
+import {absentMulti} from "../../../../utils/absentProps";
 
 const EditForm = ({ item, onChange, options, errors }) => {
   //console.log("item in EditForm", item);
-  //console.log("absent meistrija", absent(item, "main", "meistrija"));
+  //console.log("absent meistrija", absentMulti(item, "main", "meistrija"));
   const edit = item && item.main && item.main.id > 0;
   
   return (
@@ -18,7 +18,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           divClassname="form-group col-4"
           name="main.vbudas"
           label="Virinimo būdas"
-          value={absent(item, "main", "vbudas")}
+          value={absentMulti(item, "main", "vbudas")}
           options={options.vbudas}
           onChange={onChange}
           disabled={edit}
@@ -29,7 +29,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           divClassname="form-group col-4"
           name="main.virino"
           label="Kas virino"
-          value={absent(item, "main", "virino")}
+          value={absentMulti(item, "main", "virino")}
           options={options.virino}
           onChange={onChange}
           disabled={edit}
@@ -41,7 +41,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           label="Virinimo data"
           id="welding-data0"
           name="main.data0"
-          value={absent(item, "main", "data0")}
+          value={absentMulti(item, "main", "data0")}
           onChange={onChange}
           readonly={edit}
           error={errors.data0}
@@ -55,7 +55,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           id="welding-linija"
           name="main.linija"
           placeholder="Linija"
-          value={absent(item, "main", "linija")}
+          value={absentMulti(item, "main", "linija")}
           onChange={onChange}
           readonly={edit}
           error={errors.linija}
@@ -66,7 +66,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           id="welding-kelias"
           name="main.kelias"
           placeholder="Kelio Nr."
-          value={absent(item, "main", "kelias")}
+          value={absentMulti(item, "main", "kelias")}
           onChange={onChange}
           readonly={edit}
           error={errors.kelias}
@@ -77,7 +77,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           id="welding-km"
           name="main.km"
           placeholder="km"
-          value={absent(item, "main", "km")}
+          value={absentMulti(item, "main", "km")}
           onChange={onChange}
           readonly={edit}
           error={errors.km}
@@ -88,7 +88,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           id="welding-pk"
           name="main.pk"
           placeholder="pk"
-          value={absent(item, "main", "pk")}
+          value={absentMulti(item, "main", "pk")}
           onChange={onChange}
           readonly={edit}
           error={errors.pk}
@@ -99,7 +99,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           id="welding-m"
           name="main.m"
           placeholder="m"
-          value={absent(item, "main", "m")}
+          value={absentMulti(item, "main", "m")}
           onChange={onChange}
           readonly={edit}
           error={errors.m}
@@ -109,7 +109,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           divClassname="form-group col-4"
           name="main.siule"
           label="Siūlė"
-          value={absent(item, "main", "siule")}
+          value={absentMulti(item, "main", "siule")}
           options={options.siule}
           onChange={onChange}
           disabled={edit}
@@ -123,7 +123,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           type="date"
           id="welding-data"
           name="journal.data"
-          value={absent(item, "journal", "data")}
+          value={absentMulti(item, "journal", "data")}
           onChange={onChange}
           error={errors.data}
         />
@@ -132,7 +132,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           name="journal.oper"
           label="Operatorius"
           divClassname="form-group col-4"
-          value={absent(item, "journal", "oper")}
+          value={absentMulti(item, "journal", "oper")}
           options={options.oper}
           onChange={onChange}
           error={errors.oper}
@@ -142,7 +142,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           name="journal.apar"
           label="Defektoskopas"
           divClassname="form-group col-4"
-          value={absent(item, "journal", "apar")}
+          value={absentMulti(item, "journal", "apar")}
           options={options.apar}
           onChange={onChange}
           error={errors.apar}
@@ -154,7 +154,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           name="journal.pvd"
           label="Tikrinimo pavadinimas"
           divClassname="form-group col-3"
-          value={absent(item, "journal", "pvd")}
+          value={absentMulti(item, "journal", "pvd")}
           options={options.vpvd}
           onChange={onChange}
           error={errors.pvd}
@@ -165,7 +165,7 @@ const EditForm = ({ item, onChange, options, errors }) => {
           id="welding-note"
           name="journal.note"
           placeholder="Pastaba"
-          value={absent(item, "journal", "note")}
+          value={absentMulti(item, "journal", "note")}
           onChange={onChange}
           error={errors.note}
         />

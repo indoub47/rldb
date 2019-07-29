@@ -1,7 +1,7 @@
 import React from "react";
 import TextFieldGroup from "../../../common/TextFieldGroup";
 import SelectInputGroup from "../../../common/SelectInputGroup";
-import absent from "../../../../utils/absent-props";
+import {absent} from "../../../../utils/absentProps";
 
 const MainDataForm = ({ item, onChange, options }) => {
   return (
