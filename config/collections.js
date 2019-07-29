@@ -10,7 +10,7 @@ module.exports = {
       item: "defektas", 
       Item: "Defektas"
     },
-    notPanaikinta: "(dstop = '')",
+    notPanaikinta: "(dstop IS NULL)",
     samePlace: {
       query: "(linija = @linija AND kelias = @kelias AND km = @km AND pk = @pk AND m = @m AND siule = @siule)",
       filter: {
