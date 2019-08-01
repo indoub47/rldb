@@ -40,51 +40,10 @@ router.get("/register", (req, res) => {
 // visi kiti - reikia autorizuotis
 router.use(passport.authenticate("jwt", { session: false }));
 
-// // @route GET api/sqlite/things
-// // @desc Get things defined by ttype param
-// // @access Public
-// router.get("/", (req, res, next) => {
-//   const coll = COLLECTIONS.find(c => c.name === req.query.ttype);
-//   try {
-//     let stmtText = `SELECT * FROM ${coll.name}`;
-//     // superadm ir dev gauna visų regionų duomenis, kiti gauna tik tuos,
-//     // kurie yra bendri visiems arba bendri ne visiems, bet tinka jų regionui
-//     if (!["superadm", "dev"].includes(req.user.role) && coll.hasRegion) {
-//       selectStmt += ` WHERE regbits & @userRegbit`;
-//     }
-//     const stmt = db.prepare(stmtText);
-//     const items = stmt.all({ userRegbit: req.user.regbit });
-//     return res.status(200).json(items);
-//   } catch (err) {
-//     // console.log("coll error", coll, err);
-//     return res.status(500).send(err);
-//   }
-// });
-
 // @route GET api/sqlite/things/all
 // @desc Get all things as one object
 // @access Public
 router.get("/all", (req, res) => {
-  const clientV = req.query.v;
-  let dbV;
-
-  // check things on the db version
-  try {
-    dbV = db.prepare("SELECT int FROM settings WHERE name = 'allThingsV'").get().int;
-  } catch (err) {
-    console.error(err);
-    return res.status(500).send({message: "Checking version error"});
-  }
-
-  //console.log("dbV", dbV);
-  //console.log("clientV", clientV);
-
-  // if version the same, don't send things
-  if (clientV && dbV.toString() === clientV.toString()) {
-    return res.status(200).send({things: ""});
-  }
-
-  // if versions not equal, fetch the things and send along with the version
   var resultObject = {};
   COLLECTIONS.filter(c => c.actions.includes("all")).forEach(coll => {
     try {
@@ -102,7 +61,7 @@ router.get("/all", (req, res) => {
       return res.status(500).send(err);
     }
   });
-  return res.status(200).json({things: resultObject, v: dbV});
+  return res.status(200).json({things: resultObject});
 });
 
 // @route POST api/sqlite/things/update

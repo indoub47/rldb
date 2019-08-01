@@ -23,8 +23,8 @@ module.exports = function validateRegisterInput(data) {
   
   if (isNonStringOrEmpty(data.role)) {
 	  errors.role = 'role is required';
-  } else if (!Validator.isIn(data.role, ['dev', 'adm', 'superadm', 'oper', 'viewer'])) {
-    errors.role = 'invalid role; allowed roles are: dev, adm, superadm, oper, viewer';
+  } else if (!Validator.isIn(data.role, ['dev', 'adm', 'superadm', 'oper', 'viewer', 'kmv'])) {
+    errors.role = 'invalid role; allowed roles are: dev, adm, superadm, oper, viewer', 'kmv';
   }  
   
   if (isNonStringOrEmpty(data.region)) {

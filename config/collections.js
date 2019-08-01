@@ -19,9 +19,14 @@ module.exports = {
       }
     },
     permissions: {
-      update: ["adm", "superadm", "dev"],
-      insert: ["adm", "superadm", "dev"],
-      delete: ["adm", "superadm", "dev"]
+      update: ["adm", "superadm"],
+      insert: ["adm", "superadm"],
+      delete: ["adm", "superadm"],
+      fetchSupplied: ["adm", "superadm"],
+      fetchUnapproved: ["oper"], 
+      supplyWork: ["oper"], 
+      processApproved: ["adm", "superadm"],
+      fetchKmvs: ["kmv", "superadm"]
     }
   },
 
@@ -46,9 +51,14 @@ module.exports = {
       }
     },
     permissions: {
-      update: ["adm", "superadm", "dev"],
-      insert: ["adm", "superadm", "dev"],
-      delete: ["adm", "superadm", "dev"]
+      update: ["adm", "superadm"],
+      insert: ["adm", "superadm"],
+      delete: ["adm", "superadm"],
+      fetchSupplied: ["adm", "superadm"],
+      fetchUnapproved: ["oper"], 
+      supplyWork: ["oper"], 
+      processApproved: ["adm", "superadm"],
+      fetchKmvs: ["kmv", "superadm"]
     }
   }
 };

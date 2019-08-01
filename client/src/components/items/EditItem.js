@@ -62,7 +62,7 @@ class EditItem extends Component {
       ),
       siule: createOptions(
         this.props.things.siule,
-        "-- nenurodyta --",
+        "-- --",
         x => x.id
       ),
       pavoj: createOptions(
@@ -73,7 +73,7 @@ class EditItem extends Component {
       apar: createOptions(
         this.props.things.defskop.sort((d1, d2) => d1.id - d2.id),
         "-- nenurodyta --",
-        x => x.id
+        x => x.id + ", " + x.model
       ),
       oper: createOptions(
         this.props.things.operat.sort((o1, o2) => o1.name - o2.name),

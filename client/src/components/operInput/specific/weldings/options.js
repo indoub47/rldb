@@ -21,13 +21,13 @@ const options = (things) => ({
   ),
   siule: createOptions(
     things.siule,
-    "-- nenurodyta --",
+    "-- --",
     x => x.id
   ),
   apar: createOptions(
     things.defskop.sort((d1, d2) => d1.id - d2.id),
     "-- nenurodyta --",
-    x => x.id
+    x => x.id + ", " + x.model
   ),
   oper: createOptions(
     things.operat.sort((o1, o2) => o1.name - o2.name),
