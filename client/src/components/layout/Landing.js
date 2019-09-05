@@ -20,7 +20,7 @@ class Landing extends Component {
                 <div className="col-md-12 text-center">
                   <h1 className="display-3 mb-4">Rail Defect Data Base
                   </h1>
-                  <p className="lead">Manage your data with confidence</p>
+                  <p className="lead">Manage your data bla bla bla...</p>
                   <hr />
                   <Link to="/register" className="btn btn-lg btn-info mr-2">Sign Up</Link>
                   <Link to="/login" className="btn btn-lg btn-light">Login</Link>

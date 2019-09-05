@@ -17,15 +17,6 @@ const MainDataForm = ({ item, onChange, options }) => {
           value={absent(item.id)}
         />
         <TextFieldGroup
-          divClassname="form-group col-3"
-          label="Senasis ID"
-          id="item-oldid"
-          name="oldid"
-          placeholder="Senasis ID"
-          readonly={true}
-          value={absent(item.oldid)}
-        />
-        <TextFieldGroup
           divClassname="form-group col-2"
           label="Regionas"
           id="item-regbit"

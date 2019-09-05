@@ -25,15 +25,6 @@ const MainDataForm = ({ item, onChange, options }) => {
           readonly={true}
           value={absent(item.regbit)}
         />
-        <TextFieldGroup
-          divClassname="form-group col-3"
-          label="ID1"
-          id="item-id1"
-          name="id1"
-          placeholder="Defekto ID1"
-          value={absent(item.id1)}
-          onChange={onChange}
-        />
         <SelectInputGroup
           id="item-meistrija"
           name="meistrija"

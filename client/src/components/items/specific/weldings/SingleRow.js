@@ -5,7 +5,6 @@ const ItemRow = ({ item, editItem, deleteItem }) => {
     <tr>
       <td className="regbit">{item.regbit}</td>
       <td className="id text-right">{item.id}</td>
-      <td className="oldid text-right">{item.oldid}</td>
       <td className="data">{item.data0}</td>
       <td className="virino">{item.virino}</td>
       <td className="vbudas">{item.vbudas}</td>
@@ -55,7 +54,6 @@ const ItemHeadRow = () => {
     <tr>
       <th className="region">regbit</th>
       <th className="id">id</th>
-      <th className="oldid">oldid</th>
       <th className="data">data0</th>
       <th className="virino">virino</th>
       <th className="vbudas">vbudas</th>

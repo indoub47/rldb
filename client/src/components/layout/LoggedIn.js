@@ -29,11 +29,11 @@ class LoggedIn extends Component {
                   Rail Defect Data Base
                 </h1>
                 <p className="lead">
-                  Manage your data with confidence
+                  Manage your data bla bla bla
                 </p>
                 <hr />
                 <p className="lead">
-                  You're logged-in, and now you can start working
+                  Prisijungėte, galite pradėti dirbti
                 </p>
               </div>
             </div>
