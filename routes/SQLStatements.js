@@ -88,7 +88,7 @@ module.exports.DELETE_WHOLE_JOURNAL_stmt = (itype, db) => {
   return db.prepare(`DELETE FROM ${tableName} WHERE mainid = ?`);
 };
 
-module.exports.simpleUpdateStmt = (obj, tableName, excludeFields) => {
+module.exports.simpleUpdateStmt_SQLITE = (obj, tableName, excludeFields) => {
   const exFields = excludeFields || [];
   return `UPDATE ${tableName} SET ${
         Object.keys(obj)
@@ -98,11 +98,32 @@ module.exports.simpleUpdateStmt = (obj, tableName, excludeFields) => {
       }`;
 }
 
+module.exports.simpleUpdateStmt = (obj, tableName, excludeFields) => {
+  const exFields = excludeFields || [];
+  const keys = Object.keys(obj).filter(key => !exFields.includes(key));
+  const values = keys.map(key => obj[key]);
+  const text = `UPDATE ${tableName} SET ${
+        keys
+          .map((key, index) => `${key} = $${index + 1}`)
+          .join(", ")
+      }`;
+  return {text, values};
+}
+
 module.exports.simpleDeleteStmt = (tableName, filter) => {
   return `DELETE FROM ${tableName} WHERE ${filter}`;
 }
 
-module.exports.simpleInsertStmt = (tableName, draft, excludeFields) => {
+module.exports.simpleInsertStmt = (draft, tableName, excludeFields) => {
+  const exFields = excludeFields || [];  
+  const keys = Object.keys(draft)
+        .filter(key => !exFields.includes(key));
+  const values = keys.map(key => draft[key]);
+  const text = `INSERT INTO ${tableName} (${keys.join(', ')}) VALUES (${values.map((val, index) => '$' + (index + 1)).join(', ')}) RETURNING *`;
+  return {text, values};
+}
+
+module.exports.simpleInsertStmt_SQLITE = (tableName, draft, excludeFields) => {
   const exFields = excludeFields || [];
   const keys = Object.keys(draft)
         .filter(key => !exFields.includes(key));

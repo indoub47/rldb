@@ -99,7 +99,7 @@ router.get("/unapproved",
   checkPermissions("fetchUnapproved", "matyti grąžintų"), 
   (req, res) => {
   const itype = req.query.itype;
-  const oper = req.user.code;
+  const oper = req.user.kodas;
 
   const stmtText = `SELECT input FROM unapproved WHERE itype = ? AND oper = ?`;
   try {
@@ -120,7 +120,7 @@ router.post("/supply",
   (req, res) => {
   const itype = req.body.itype;
   const input = req.body.input;
-  const oper = req.user.code || req.user.email;
+  const oper = req.user.kodas || req.user.email;
   const regbit = req.user.regbit;
 
   const insertStmt = db.prepare(

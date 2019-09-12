@@ -3,9 +3,9 @@ exports.COLLECTIONS = [
   {name: "btipas", actions: ["all"], hasRegion: false},
   {name: "defskop", actions: ["all"], hasRegion: true},
   {name: "operat", actions: ["all"], hasRegion: true},
-  {name: "tbudas", actions: ["defectoscopes", "all"], hasRegion: false},
+  {name: "tbudas", actions: ["defectoscopes"], hasRegion: false},
   {name: "kkateg", actions: ["all"], hasRegion: false},
-  {name: "linst", actions: ["all"], hasRegion: true},
+  {name: "linst", actions: [], hasRegion: true},
   {name: "linija", actions: ["all"], hasRegion: true},
   {name: "siule", actions: ["all"], hasRegion: false},
   {name: "vbudas", actions: ["all"], hasRegion: false},
@@ -14,7 +14,7 @@ exports.COLLECTIONS = [
   {name: "virino", actions: ["all"], hasRegion: true},
   {name: "vbudas", actions: ["all"], hasRegion: false},
   {name: "vpvd", actions: ["all"], hasRegion: false},
-  {name: "itemstatus", actions: ["all"], hasRegion: false},
+  {name: "itemstatus", actions: [], hasRegion: false},
   {name: "region", actions: ["register_user"]},
   {name: "urole", actions: ["register_user"]}
 ];

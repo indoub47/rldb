@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const passport = require("passport");
 const secret = require("./config/secret");
 
+const test = require("./routes/api/test");
 const users = require("./routes/api/users");
 const items = require("./routes/api/items");
 const journal = require("./routes/api/journal");
@@ -17,18 +18,12 @@ const operinput = require("./routes/api/operinput");
 const app = express();
 require("./config/passport")(passport);
 
-app.use((req, res, next) => {
-  const delay = 0;
-  const start = Date.now();
-  while (Date.now() - start < delay) {}
-  next();
-});
-
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(passport.initialize());
 
+app.use("/api/test", test);
 app.use("/api/users", users);
 app.use("/api/items", items);
 app.use("/api/journal", journal);

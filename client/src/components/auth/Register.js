@@ -18,6 +18,7 @@ class Register extends Component {
       email: "",
       role: "",
       region: "",
+      kodas: "",
       password: "",
       password2: "",
       // passwordMatchError: {}
@@ -48,7 +49,7 @@ class Register extends Component {
       email: this.state.email,
       role: this.state.role,
       region: this.state.region,
-      code: this.state.code,
+      kodas: this.state.kodas,
       password: this.state.password,
       password2: this.state.password2
     };
@@ -135,12 +136,12 @@ class Register extends Component {
                   />
                 )}
                 <TextFieldGroup
-                  name="code"
+                  name="kodas"
                   type="text"
-                  placeholder="Code"
-                  value={this.state.code}
+                  placeholder="Kodas"
+                  value={this.state.kodas}
                   onChange={this.onChange}
-                  error={errors.code}
+                  error={errors.kodas}
                   autoComplete="off"
                 />
                 <TextFieldGroup

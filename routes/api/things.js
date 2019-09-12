@@ -5,13 +5,10 @@ const COLLECTIONS = require("../../config/settings").COLLECTIONS;
 const REGIONS = require("../../config/settings").REGIONS;
 const SQLStatements = require("../SQLStatements");
 
-const Database = require("better-sqlite3");
-const db = new Database("./db/dnbl.sqlite", {
-  verbose: console.log,
-  fileMustExist: true
-});
+const { Pool } = require("pg");
+const pool = new Pool();
 
-// @route GET api/sqlite/things/register
+// @route GET api/things/register
 // @desc Get register things as one object
 // @access Public
 router.get("/register", (req, res) => {
@@ -20,49 +17,55 @@ router.get("/register", (req, res) => {
     c.actions.includes("register_user")
   ).map(c => c.name);
 
-  // will be collected result
-  var resultObject = {};
-
-  colls.forEach(coll => {
-    try {
-      const stmt = db.prepare(`SELECT * FROM ${coll}`);
-      const collItems = stmt.all();
-      // // console.log("coll, collItems", coll, collItems);
-      resultObject[coll] = collItems;
-    } catch (err) {
+  Promise.all(colls.map(coll => pool.query(`SELECT * FROM ${coll}`)))
+    .then(succ => {
+      console.log("succ", succ);
+      let collValues = {};
+      colls.forEach((c, index) => {
+        collValues[c] = succ[index].rows;
+      });
+      res.status(200).json(collValues);
+    })
+    .catch(err => {
       console.error(err);
       return res.status(500).send(err);
-    }
-  });
-  return res.status(200).json(resultObject);
+    });
 });
 
 // visi kiti - reikia autorizuotis
 router.use(passport.authenticate("jwt", { session: false }));
 
-// @route GET api/sqlite/things/all
+// @route GET api/things/all
 // @desc Get all things as one object
 // @access Public
 router.get("/all", (req, res) => {
-  var resultObject = {};
-  COLLECTIONS.filter(c => c.actions.includes("all")).forEach(coll => {
-    try {
-      let selectStmt = `SELECT * FROM ${coll.name}`;
-      // superadm ir dev gauna visų regionų duomenis, kiti gauna tik tuos,
-      // kurie yra bendri visiems arba bendri ne visiems, bet tinka jų regionui
-      if (!["superadm", "dev"].includes(req.user.role) && coll.hasRegion) {
-        selectStmt += ` WHERE regbits & @userRegbit`;
-      }
-      const stmt = db.prepare(selectStmt);
-      const collItems = stmt.all({ userRegbit: req.user.regbit });
-      resultObject[coll.name] = collItems;
-    } catch (err) {
+  var resultObject = {}; // which collections to return
+  const colls = COLLECTIONS.filter(c => c.actions.includes("all"));
+  const stmts = colls.map(c => {
+    let stmt = {text: `SELECT * FROM ${c.name}`, values: []};
+    // superadm ir dev gauna visų regionų duomenis, kiti gauna tik tuos,
+    // kurie yra bendri visiems arba bendri ne visiems, bet tinka jų regionui
+    if (!["superadm"].includes(req.user.role) && c.hasRegion) {
+      stmt.text += ` WHERE regbits & $1 <> 0`;
+      stmt.values = [req.user.regbit];
+    }
+    return stmt;
+  });
+  Promise.all(stmts.map(stmt => pool.query(stmt)))
+    .then(succ => {
+      let collValues = {};
+      colls.forEach((c, index) => {
+        collValues[c.name] = succ[index].rows;
+      });
+      res.status(200).json(collValues);
+    })
+    .catch(err => {
       console.error(err);
       return res.status(500).send(err);
-    }
-  });
-  return res.status(200).json({things: resultObject});
+    });
 });
+
+/*
 
 // @route POST api/sqlite/things/update
 // @desc Update things (replace by draft)
@@ -87,12 +90,10 @@ router.post("/update", (req, res) => {
 
   // jeigu ne superadm, dev - negali updateinti bendrų
   if (!["superadm", "dev"].includes(userRole) && !coll.hasRegion) {
-    return res
-      .status(404)
-      .send({
-        msg:
-          "čia yra bendri duomenys, o tu gali keisti išimtinai tik savo regiono duomenis"
-      });
+    return res.status(404).send({
+      msg:
+        "čia yra bendri duomenys, o tu gali keisti išimtinai tik savo regiono duomenis"
+    });
   }
 
   let draft = req.body.draft;
@@ -154,12 +155,10 @@ router.put("/create", (req, res) => {
 
   // jeigu ne superadm, dev - negali updateinti bendrų
   if (!["superadm", "dev"].includes(userRole) && !coll.hasRegion) {
-    return res
-      .status(404)
-      .send({
-        msg:
-          "Čia bendri duomenys, o tau leidžiama kurti duomenis tiktai savo regionui. Kreipkis į superadminą. Soriukas :)"
-      });
+    return res.status(404).send({
+      msg:
+        "Čia bendri duomenys, o tau leidžiama kurti duomenis tiktai savo regionui. Kreipkis į superadminą. Soriukas :)"
+    });
   }
 
   let draft = req.body.draft;
@@ -241,12 +240,10 @@ router.delete("/delete", (req, res) => {
 
   // jeigu ne superadm, dev - negali trinti bendrų
   if (!["superadm", "dev"].includes(userRole) && !coll.hasRegion) {
-    return res
-      .status(404)
-      .send({
-        msg:
-          "Čia bendri duomenys, o tau leidžiama trinti tik išskirtinai savo regiono duomenis. Kreipkis į superadminą. Soriukas :)"
-      });
+    return res.status(404).send({
+      msg:
+        "Čia bendri duomenys, o tau leidžiama trinti tik išskirtinai savo regiono duomenis. Kreipkis į superadminą. Soriukas :)"
+    });
   }
 
   let filter = "id = ?";
@@ -267,9 +264,10 @@ router.delete("/delete", (req, res) => {
     const info = stmt.run(req.body.id, { regbits: req.user.regbit });
     return res.status(200).send(info);
   } catch (err) {
-    console.error(err);    
+    console.error(err);
     return res.status(500).send({ ...err, msg: "bbz... :/" });
   }
 });
+*/
 
 module.exports = router;
