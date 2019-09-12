@@ -1,11 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const Database = require("better-sqlite3");
-const db = new Database("./db/dnbl.sqlite", {
-  verbose: console.log,
-  fileMustExist: true
-});
+
+const { Pool } = require("pg");
+const pool = new Pool();
+
 const collectionOptions = require("../../config/collections");
 
 // force to authenticate
@@ -19,17 +18,19 @@ router.get("/", (req, res, next) => {
   const itype = req.query.itype;
   const coll = collectionOptions[itype];
   if (!coll) return res.status(404).send("no collection");
+  const mainid = req.query.mainid;
+  if (!mainid) return res.status(404).send("no id");
   // Galima daryti užklausą, tikrinant ar mainid yra to paties regbit kaip ir user.regbit - 
   // tam, kad nepasiektų ne savo journal.
   // Bet gal nėra reikalo - nieko baisaus, jeigu pamatys svetimą journal. 
   // Redaguoti jo vistiek negalės.
-  const stmtText = `SELECT * FROM ${coll.tables.journal.name} WHERE mainid=?`;
-  try {
-    const items = db.prepare(stmtText).all(req.query.mainid);
-    return res.status(200).send(items);
-  } catch (error) {
-    return res.status(500).send(error);
-  }
+  const stmtText = `SELECT * FROM ${coll.tables.journal.name} WHERE mainid = $1`;
+  pool.query(stmtText, [mainid])
+    .then(succ => res.status(200).send(succ.rows))
+    .catch(error => {
+      console.error(error);
+      res.status(500).send(error);
+    });
 });
 
 module.exports = router;

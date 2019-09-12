@@ -3,12 +3,6 @@ const router = express.Router();
 const passport = require("passport");
 const SQLStatements = require("../SQLStatements");
 
-const Database = require("better-sqlite3");
-const db = new Database("./db/dnbl.sqlite", {
-  verbose: console.log,
-  fileMustExist: true
-});
-
 const { Pool } = require("pg");
 const pool = new Pool();
 
@@ -177,109 +171,5 @@ router.put("/insert", (req, res) => {
       }
     });
 });
-
-// @route PUT api/fsquery/insert
-// @desc Insert fsquery
-// @body draft object
-// @access Public
-router.put("/insert-sqlite", (req, res) => {
-  let draft = req.body;
-  draft.email = req.user.email;
-  delete draft.id;
-  // console.log("mark1");
-  const validation = validate(draft, ["email", "id"]);
-  if (validation.length) {
-    return res.status(400).send({errors: validation});
-  }
-  // console.log("mark2");
-  
-  try {
-    // check if name is unique
-    const stmtUniqueText = `SELECT COUNT(*) AS count FROM ${tableName} WHERE email = ? AND name = ? AND itype = ?`;
-    const stmtUnique = db.prepare(stmtUniqueText);
-    const unique =
-      stmtUnique.get(draft.email, draft.name, draft.itype).count === 0;
-    if (!unique) return res.status(400).send({ msg: "name must be unique" });
-    
-    // perform insert
-    const stmtText = SQLStatements.simpleInsertStmt(tableName, draft);    
-    // console.log("insert stmt", stmtText);
-    const info = db.prepare(stmtText).run(draft);
-    return res.status(200).json({ ...draft, id: info.lastInsertRowid });
-  } catch (err) {
-    console.error(err);    
-    return res.status(500).send(err);
-  }
-});
-
-
-
-// @route GET api/fsquery/fetch
-// @desc Get fsqueries for particular itype and email
-// @params itype string
-// @access Public
-router.get("/fetch-sqlite", (req, res) => {
-  const email = req.user.email;
-  const itype = req.query.itype;
-  const stmtText = `SELECT * FROM ${tableName} WHERE email = ? AND itype = ?`;
-  try {
-    const stmt = db.prepare(stmtText);
-    const fsqueries = stmt.all(email, itype);
-    return res.status(200).json(fsqueries);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).send(err);
-  }
-});
-
-// @route DELETE api/fsquery/delete
-// @desc Delete fsquery
-// @params id string
-// @access Public
-router.delete("/delete-sqlite", (req, res) => {
-  const email = req.user.email;
-  const id = req.query.id;
-  const stmtText = SQLStatements.simpleDeleteStmt(tableName, 'email = ? AND id = ?');
-  // email - kad apsaugoti, kad galėtų ištrinti tik savus
-  try {
-    const info = db.prepare(stmtText).run(email, id);
-    return res.status(200).json({ ...info, id });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).send(err);
-  }
-});
-
-// @route POST api/fsquery/update
-// @desc Delete fsquery
-// @body draft object
-// @access Public
-router.post("/update-sqlite", (req, res) => {
-  let draft = req.body;
-  draft.email = req.user.email;
-
-  const validation = validate(draft, ["email"]);
-  if (validation.length) {
-    return res.status(400).send({errors: validation});
-  } 
-
-
-  try {
-    // check if name is unique
-    const stmtUniqueText = `SELECT COUNT(*) AS count FROM ${tableName} WHERE email = ? AND name = ? AND itype = ? AND id <> ?`;
-    const result = db.prepare(stmtUniqueText).get(draft.email, draft.name, draft.itype, draft.id);
-    if (result.count !== 0) return res.status(400).send({ msg: "name must be unique" });
-
-    // perform update
-    const filter = 'email=@email AND id=@id AND itype=@itype';
-    const stmtText = `${SQLStatements.simpleUpdateStmt(draft, tableName, ["id", "email", "itype"])} WHERE ${filter}`;
-    const info = db.prepare(stmtText).run(draft);
-    return res.status(200).json(draft);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).send(err);
-  }
-});
-
 
 module.exports = router;
