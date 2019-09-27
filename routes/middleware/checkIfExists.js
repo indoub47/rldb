@@ -1,11 +1,13 @@
-const queryFactory = require("../SQLStatements").QUERY_IF_ITEM_EXISTS_stmtFactory;
+const textFactory = coll =>
+  `SELECT * FROM ${coll.tables.main.name} WHERE id = $1 AND regbit = $2`;
 
-function queryIfItemExists(mainId, coll, regbit, db) {
-  return queryFactory(db, coll).get(mainId, regbit);
-}
+const queryObject = (mainId, coll, regbit) => ({
+  text: queryFactory(coll),
+  values: [mainId, regbit]
+});
 
 function checkIfExists(mainId, req, res, db, ref) {
-// just check if still exists
+  // just check if still exists
   const coll = res.locals.coll;
   ref.result = null;
   try {
@@ -28,6 +30,6 @@ function checkIfExists(mainId, req, res, db, ref) {
   }
 }
 
-module.exports.queryFactory = queryFactory;
-module.exports.bareQuery = queryIfItemExists;
+module.exports.textFactory = textFactory;
+module.exports.queryObject = queryObject;
 module.exports.fullReqRes = checkIfExists;

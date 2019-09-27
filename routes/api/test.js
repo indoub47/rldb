@@ -3,6 +3,9 @@ const router = express.Router();
 const passport = require("passport");
 const db = require("../../db");
 
+const { Client, Pool } = require("pg");
+const pool = new Pool();
+
 // force to authenticate
 router.use(passport.authenticate("jwt", { session: false }));
 

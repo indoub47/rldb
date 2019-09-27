@@ -103,7 +103,48 @@ module.exports.returnToOper = db => {
 
 
 
-module.exports.update = function(itype, main, journal, returnRef, db) {
+module.exports.update_sqlite = function(itype, main, journal, returnRef, db) {
+  let mainInfo = null;
+
+  // net jeigu main nebuvo redaguotas, keičiasi versija
+  const txtUpdateMain = SQLStmts.UPDATE_stmtTextFactory(itype, "main")(main);
+  mainInfo = db.prepare(txtUpdateMain).run(main);
+
+  let journalInfo = {};
+
+  if (journal.update && journal.update.length) {
+    const factUpdateJournal = SQLStmts.UPDATE_stmtTextFactory(itype, "journal");
+    journalInfo.update = [];
+    journal.update.forEach(j => {
+      const txtUpdateJournal = factUpdateJournal(j);
+      const jUInfo = db.prepare(txtUpdateJournal).run(j);
+      journalInfo.update.push({ [j.jid]: jUInfo });
+    });
+  }
+
+  if (journal.insert && journal.insert.length) {
+    const factInsertJournal = SQLStmts.INSERT_stmtTextFactory(itype, "journal");
+    journalInfo.insert = [];
+    journal.insert.forEach(j => {
+      const txtInsertJournal = factInsertJournal(j);
+      const jIInfo = db.prepare(txtInsertJournal).run(j);
+      journalInfo.insert.push({ [j.jid]: jIInfo });
+    });
+  }
+
+  if (journal.delete && journal.delete.length) {
+    const mainId = main.id;
+    const jids = journal.delete; //.map(idStr => parseInt(idStr));
+    const txtDeleteJournal = SQLStmts.DELETE_SOME_JOURNAL_stmtText(itype, jids);
+    journalInfo.delete = db.prepare(txtDeleteJournal).run(mainId, jids);
+  }
+
+  returnRef.mainInfo = mainInfo;
+  returnRef.journalInfo = journalInfo;
+};
+
+
+module.exports.update = function(itype, main, journal, returnRef, client) {
   let mainInfo = null;
 
   // net jeigu main nebuvo redaguotas, keičiasi versija
