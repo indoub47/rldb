@@ -72,17 +72,17 @@ module.exports.INSERT_stmtFactory = (itype, itemPart) => {
   const tableName = collections[itype].tables[itemPart].name;
   const excludeFields = exclude.insert[itemPart];
   return obj => {
-    console.log("..... excludeFields", excludeFields);
-    console.log("..... obj", obj);
-    console.log("..... obj.keys", Object.keys(obj));
+    //console.log("..... excludeFields", excludeFields);
+    //console.log("..... obj", obj);
+    //console.log("..... obj.keys", Object.keys(obj));
     const keys = Object.keys(obj).filter(key => !excludeFields.includes(key));
-    console.log("..... filtered keys", keys);
+    // console.log("..... filtered keys", keys);
     const values = keys.map(key => obj[key]);
-    console.log("..... values", values);
+    //console.log("..... values", values);
     const text = `INSERT INTO ${tableName} (${keys.join(", ")}) VALUES (${keys
       .map((key, index) => `$${index + 1}`)
-      .join(", ")})`;
-    console.log("..... text", text);
+      .join(", ")}) RETURNING *`;
+    //console.log("..... text", text);
     return {text, values};
   };
 };
@@ -101,13 +101,10 @@ module.exports.UPDATE_stmtFactory = (itype, itemPart) => {
 
   return obj => {
     const keys = Object.keys(obj).filter(key => !excludeFields.includes(key));
-    console.log("---- keys", keys);
     const values = keys.map(key => obj[key]);
-    console.log("---- values", values);
     const text = `UPDATE ${tableName} SET ${keys
       .map((key, index) => `${key} = $${index + 1}`)
-      .join(", ")} WHERE ${filterFunc(keys.length)}`;
-    console.log("---- text", text);
+      .join(", ")} WHERE ${filterFunc(keys.length)} RETURNING *`;
     return {text, values};
   };
 };
@@ -117,9 +114,19 @@ module.exports.UPDATE_stmtFactory = (itype, itemPart) => {
 // txtStmt = DELETEMAIN_stmtText(itype);
 // Kad tą tekstą įvykdyti, reikia db.prepare(textStmt).run(mainData);
 // kur mainData turi id, regbit, v
-module.exports.DELETE_MAIN_stmtText = itype => {
+module.exports.DELETE_MAIN_stmtText_SQLITE = itype => {
   const tableName = collections[itype].tables.main.name;
   return `DELETE FROM ${tableName} WHERE id = @id AND regbit = @regbit AND v = @v`;
+};
+
+// eksportuoja funkciją, kuri
+// pagamina objekto main dalies DELETE SQL statement tekstą:
+// txtStmt = DELETEMAIN_stmtText(itype);
+// Kad tą tekstą įvykdyti, reikia db.prepare(textStmt).run(mainData);
+// kur mainData turi id, regbit, v
+module.exports.DELETE_MAIN_stmt = itype => {
+  const tableName = collections[itype].tables.main.name;
+  return `DELETE FROM ${tableName} WHERE id = $1 AND regbit = $2 AND v = $3`;
 };
 
 // eksportuoja funkciją, kuri
@@ -149,7 +156,20 @@ module.exports.DELETE_SOME_JOURNAL_stmt = (itype, journal_delete, mainId) => {
 // eksportuoja prepared statement, kuris
 // naikina item visą journal
 // Kad tą įvykdyti, reikia stmt.run(main_id);
-module.exports.DELETE_WHOLE_JOURNAL_stmt = (itype, db) => {
+module.exports.DELETE_WHOLE_JOURNAL_stmt = itype => {
+  const tableName = collections[itype].tables.journal.name;
+  return `DELETE FROM ${tableName} WHERE mainid = $1`;
+};
+
+module.exports.SELECT_JOURNAL_COUNT_stmt = itype => {
+  const tableName = collections[itype].tables.journal.name;
+  return `SELECT COUNT(*) AS count FROM ${tableName} WHERE mainid = $1`;
+}
+
+// eksportuoja prepared statement, kuris
+// naikina item visą journal
+// Kad tą įvykdyti, reikia stmt.run(main_id);
+module.exports.DELETE_WHOLE_JOURNAL_stmt_SQLITE = (itype, db) => {
   const tableName = collections[itype].tables.journal.name;
   return db.prepare(`DELETE FROM ${tableName} WHERE mainid = ?`);
 };
@@ -229,7 +249,7 @@ module.exports.SEARCH_ITEMS_BY_LOCATION_stmt = (query, regbit, collection) => {
       LOCATION_KEYS.includes(key) && query[key] != null && query[key] !== ""
   );
   if (keys.length === 0)
-    return { error: { status: 400, message: "no location" } };
+    return {error: {status: 400, msg: "no location"} };
   const values = keys.map(key => query[key]);
   const locationFilter = keys
     .map((key, index) => `${key} = $${index + 2}`)

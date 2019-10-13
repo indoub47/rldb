@@ -6,6 +6,7 @@ const passport = require("passport");
 const validateRegisterInput = require("../../validation/register");
 const validateLoginInput = require("../../validation/login");
 const SECRET_KEY = require("../../config/secret.js").SECRET_KEY;
+const LOGIN_EXP = require("../../config/settings.js").LOGIN_EXPIRES;
 const REGIONS = require("../../config/settings").REGIONS;
 
 const { Pool } = require("pg");
@@ -111,7 +112,7 @@ router.post("/login", (req, res) => {
             };
             // ty to sign the jwt and send to client
             try {
-              const token = jwt.sign(payload, SECRET_KEY, {expiresIn: 36000});
+              const token = jwt.sign(payload, SECRET_KEY, {expiresIn: LOGIN_EXP});
               console.log("login OK");
               res.status(200).json({
                   success: true,

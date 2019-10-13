@@ -187,12 +187,8 @@ export const insertItem = (main, journal, history, itype) => (dispatch, getState
     .then(res => {
       // suformuojamas pranešimas apie rezultatą
       // console.log("inserting item response", res.data);
-      if (res.data.ok) {
-        dispatch(setItemListAlert(itype, res.data.msg, "success"));
-      } else {
-        dispatch(setItemListAlert(itype, res.data.msg, "warning"));
-      }
-
+      dispatch(setItemListAlert(itype, res.data.msg, "success"));
+      
       // pagal rezultatą updateinamas local cache
       if (
         getState().itemsStatus[itype].all ||

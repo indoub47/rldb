@@ -80,19 +80,14 @@ export const searchItems = (itype, filter) => dispatch => {
   axios
     .get("/api/items/search/location", { params: { itype, ...filter } })
     .then(res => {
-      dispatch(searchItemsSuccess(res.data));
+      if (res.data.msg) {
+        dispatch(searchItemsFailure(res.data.msg, "info"));
+      } else {
+        dispatch(searchItemsSuccess(res.data));
+      }
     })
     .catch(err => {
-      let msg;
-      let type = "error";
-      if (err.response && err.response.data) {
-        if (err.response.data.ok) type = "info";
-        msg = err.response.data.msg;
-      } else {
-        console.error(err);
-        msg = err.toString();
-      }
-      dispatch(searchItemsFailure(msg, type));
+      dispatch(searchItemsFailure(err.toString(), "error"));
     });
 };
 

@@ -1,12 +1,12 @@
 "use strict";
-require('dotenv').config();
+//require('dotenv').config();
+console.log("DATABASE:", process.env.PGDATABASE);
 const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
 const passport = require("passport");
 const secret = require("./config/secret");
 
-const test = require("./routes/api/test");
 const users = require("./routes/api/users");
 const items = require("./routes/api/items");
 const journal = require("./routes/api/journal");
@@ -23,7 +23,6 @@ app.use(bodyParser.json());
 
 app.use(passport.initialize());
 
-app.use("/api/test", test);
 app.use("/api/users", users);
 app.use("/api/items", items);
 app.use("/api/journal", journal);
@@ -42,7 +41,37 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+// app.use((err, req, res, next) => {
+//   console.error(err.stack);
+
+//   next(err);
+// });
+
+app.use((err, req, res, next) => {  
+  if (err.rollback) {
+    console.error("ROLLBACK", err.rollback.action, err.rollback.data);
+  }
+  if (res.headersSent) {
+    // not responding but passing to the default handler
+    // which closes the connection and fails the request
+    return next(err);
+  }
+
+  // mėginu tikrinti; jeigu visos ne mano generuotos yra Error,
+  // tada galima susitvarkyti, kad klientui nereikėtų callinti toString();
+  // console.log(err, "Is instanceof Error?", err instanceof Error);
+  if (err instanceof Error) {
+    res.status(500).send(err.message);
+  } else {
+    res.status(err.status).send(err);
+  }
+});
+
+
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Node express server is running on port ${PORT}!`);
 });
+
+module.exports = app;

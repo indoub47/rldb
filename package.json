@@ -6,8 +6,11 @@
   "scripts": {
     "start": "node server",
     "server": "node server.js",
+    "serverloc": "node -r dotenv/config server.js",
     "client": "cd ./client && npm run start",
-    "test": "jest",
+    "recreatedb": "cd ./bin/ && recreatedb.bat",
+    "test": "cross-env NODE_ENV=test PGDATABASE=testrldb PGHOST=localhost PGUSER=postgres PGPORT=5432 jest --testTimeout=15000",
+    "pretest": "cross-env NODE_ENV=test npm run recreatedb",
     "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client"
   },
   "repository": {
@@ -20,12 +23,23 @@
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^5.4.0",
     "body-parser": "^1.18.3",
-    "dotenv": "^8.1.0",
     "express": "^4.16.4",
     "jsonwebtoken": "^8.3.0",
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
     "pg": "^7.12.1",
     "validator": "^10.8.0"
+  },
+  "devDependencies": {
+    "cross-env": "^6.0.3",
+    "dotenv": "^8.1.0",
+    "jest": "^24.9.0",
+    "supertest": "^4.0.2"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ]
   }
 }

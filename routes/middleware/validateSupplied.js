@@ -1,13 +1,85 @@
 const validate = require("../../validation/validate").validateItemPair;
-const checkSamePlace = require("../middleware/checkSamePlace").bareQuery;
-const checkIfExists = require("../middleware/checkIfExists").bareQuery;
+const checkSamePlace = require("../middleware/checkSamePlace");
+const checkStillExists = require("../middleware/checkStillExists");
+const checkVersionMatch = require("../middleware/checkVersionMatch");
 
-module.exports.toCreate = (itemArr, coll, regbit, itype, db) => {
+// validates supplied items
+// jeigu randa klaidų, prideda validation: {reason: "string", errors: [array]}
+// SIDE EFECT - item modifikuojamas!
+
+module.exports.toCreate = (item, regbit, config, db) => {
+  return new Promise((resolve, reject) => {
+    const validated = validate(item.main, item.journal, config.itype, true, "both");
+
+    if (validated.errors) {
+      // jeigu yra klaidų, prideda validation ir grąžina
+      item.validation =  { reason: "draft", errors: validated.errors};
+      resolve(item);
+    } else {
+      // jeigu klaidų nėra, main ir journal pakeičia validintais
+      item.main = validated.main;
+      item.journal = validated.journal;
+
+      checkSamePlace(db, config, "insert", item.main, regbit)
+        .catch(e => {
+          if (e.msg) {
+            item.validation = {reason: "same place", errors: [e.msg]};
+          } else {
+            console.error(e);
+            item.validation = {reason: "server error", errors: [e]};
+          }
+        })
+        .then(() => resolve(item)) // finally grąžina
+    }
+  });
+}
+
+
+module.exports.toModify = (item, regbit, config, db) => {
+  return new Promise((resolve, reject) => {
+    // validina tik journal, nes tas įvestas operatoriaus; main gautas iš db
+    const validated = validate(item.main, item.journal, config.itype, true, "journal");
+    if (validated.errors) {
+      // jeigu yra klaidų, prideda validation ir grąžina
+      item.validation = { reason: "draft", errors: validated.errors };
+      resolve(item);
+    } else {
+      // jeigu klaidų nėra, journal pakeičia validintu
+      item.journal = validated.journal;
+      checkStillExists(db, conf.tables.main.name, item.main.id, regbit)
+        .then(found => checkVersionMatch(found.v, item.main.v))
+        // same place netikrina, nes item.main operatorius nekeičia
+        //.then(() => checkSamePlace(db, config, "update", item.main, regbit))
+        .catch(e => {
+          switch(e.status) {
+            case 404:
+              result.validation = {reason: "not found"};
+              break;
+            case 409:
+              result.validation = {reason: "bad version"};
+              break;
+            // case 400:
+            //   result.validation = {reason: "same place"};
+            //   break;
+            default: 
+              console.error(e);
+              result.validation = {reason: "server error", errors: [e.msg]}
+          }
+        })
+        .then(() => resolve(result)) // finally
+    }
+  });
+}
+
+
+/*
+
+module.exports.toCreateSqlite = (itemArr, coll, regbit, itype, pool) => {
   let vResult;
 
   // Kuriamų naujų validinti ir main, ir journal
   itemArr
-    .filter(item => !item.validation)
+    .filter(item => !item.validation) // tie, kurie sėkmingai parsinti
     .forEach(item => {
       vResult = validate(
         item.main,
@@ -41,8 +113,7 @@ module.exports.toCreate = (itemArr, coll, regbit, itype, db) => {
 };
 
 
-
-module.exports.toModify = (itemArr, coll, regbit, itype, db) => {
+module.exports.toModifySqlite = (itemArr, coll, regbit, itype, db) => {
   let vResult;
 
   // Modifikuojamų validinti tik journal
@@ -85,3 +156,5 @@ module.exports.toModify = (itemArr, coll, regbit, itype, db) => {
       }
     });
 };
+
+*/

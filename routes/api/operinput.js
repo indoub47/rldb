@@ -1,20 +1,25 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
+const { Client, Pool } = require("pg");
+const pool = new Pool();
+const SQLStmts = require("../SQLStatements");
+const modelProvider = require("../../models/modelProvider");
+const checkPermissions = require("../middleware/checkPermissions");
+const getCollection = require("../middleware/getCollection");
+
 const Database = require("better-sqlite3");
 const db = new Database("./db/dnbl.sqlite", {
   verbose: console.log,
   fileMustExist: true
 });
-const modelProvider = require("../../models/modelProvider");
-const checkPermissions = require("../middleware/checkPermissions");
-const getCollection = require("../middleware/getCollection");
 const processApproved = require("../middleware/processApproved");
 
 const transactions = require("../transactions");
 const validate = require("../../validation/validate").validateItemPair;
 const checkSameLocFctr = require("../middleware/checkSamePlace").queryFactory;
-const checkIfExitsFact = require("../middleware/checkIfExists").queryFactory;
+const checkIfExitsFact = require("../middleware/checkStillExists").queryFactory;
+const checkResultCount = require('../middleware/checkResultCount');
 const splitMainJournal = require("../middleware/splitMainJournal");
 const parseMainJournal = require("../middleware/parseMainJournal");
 const validateSupplied = require("../middleware/validateSupplied");
@@ -41,6 +46,76 @@ function asTransaction(func) {
 // force to authenticate
 router.use(passport.authenticate("jwt", { session: false }));
 
+// @route POST /api/operinput/supply
+// @desc Sends operinput to the temporary storage on the database
+// @access Public
+router.post("/supply", 
+  getCollection,
+  checkPermissions("supplyWork", "pateikti"), 
+  (req, res, next) => {
+  const itype = req.body.itype;
+  const input = req.body.input;
+  const oper = req.user.kodas || req.user.email;
+  const regbit = req.user.regbit;
+
+  const insertStmt = "INSERT INTO supplied (main, journal, itype, oper, regbit, timestamp) VALUES ($1, $2, $3, $4, $5, $6)" ;
+  const deleteStmt = "DELETE FROM unapproved WHERE itype = $1 AND oper = $2";
+
+  pool
+    .connect()
+    .then(client => {
+      return client
+        .query('BEGIN')
+        .then(() => {
+          return Promise.all(
+            input.map(inp => {
+              const insertValues = [
+                JSON.stringify(inp.main),
+                JSON.stringify(inp.journal),
+                itype,
+                oper,
+                regbit,
+                Date.now()
+              ];
+              return client.query(insertStmt, insertValues);
+            })
+          );
+        })
+        .then(succ => checkResultCount.multi(succ, input.length))
+        .then(() => client.query(deleteStmt, [itype, oper]))
+        .then(() => client.query('COMMIT'))
+        .catch(e => {
+          result.error = e;
+          return client.query('ROLLBACK');
+        })
+        .catch(e => {
+          // pasigaunama ROLLBACK error
+          result.error.rollback.error = e;
+          result.error.rollback.draft = {
+            input,
+            itype,
+            oper,
+            regbit,
+            date: Date.now()
+          };
+        })
+        .then(() => {
+          // release client
+          client.release();
+
+          // error to error processor
+          if (result.error) {
+            return next(result.error);
+          }
+
+          // returning result to client
+          res.status(200).send({ ok: 1 });
+        })
+        .catch(next); // client error
+      })
+      .catch(next); // connect error
+  });
+
 // @route GET /api/operinput/supplied
 // @desc Fetch supplied inputs of particular region and particular itype
 // @access Public
@@ -48,48 +123,43 @@ router.get(
   "/supplied",
   getCollection,
   checkPermissions("fetchSupplied", "matyti pateiktų"),
-  (req, res) => {
+  (req, res, next) => {
     // patikrinti ar turi teisę
     const itype = req.query.itype;
     const admRegbit = req.user.regbit;
     const coll = res.locals.coll;
 
-    const stmtText = `SELECT * FROM supplied WHERE itype = ? AND regbit = ?`;
-    let fetched = null;
+    const stmtText = `SELECT * FROM supplied WHERE itype = $1 AND regbit = $2`;
+    pool
+      .query(stmtText, [itype, regbit])
+      .then(succ => {
+        // json to object
+        succ.rows.forEach(item => parseMainJournal(item));
+        return {
+            create: succ.rows.filter(i => i.main.id < 0),
+            modify: succ.rows.filter(i => i.main.id >= 0)
+          };
+      })
+      .then(succ => {  
 
-    try {
-      fetched = db.prepare(stmtText).all(itype, admRegbit);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).send(error);
-    }
+        // Visus įrašus padalinti į kuriamus naujus ir modifikuojamus.
+        // Modifikuojamų id teigiamas, kuriamų naujų id neigiamas.
+        let toCreate = succ.rows.filter(i => i.main.id < 0);
+        let toModify = succ.rows.filter(i => i.main.id > 0);
 
-    //console.log("fetched", fetched);
+        // validate drafts
+        validateSupplied.toCreate(toCreate, coll, admRegbit, itype, db);
+        validateSupplied.toModify(toModify, coll, admRegbit, itype, db);
+        // Each invalid item has gotten .validation prop:
+        // {reason: "string", (optional) errors: []}
 
-    if (fetched.length < 1) return res.status(200).send([]);
+        // merge back into single array
+        const merged = toCreate.concat(toModify);
 
-    // json to object
-    fetched.forEach(item => parseMainJournal(item));
-
-    //console.log("parsed", fetched);
-
-    // Visus įrašus padalinti į kuriamus naujus ir modifikuojamus.
-    // Modifikuojamų id teigiamas, kuriamų naujų id neigiamas.
-    let toCreate = fetched.filter(i => i.main.id < 0);
-    let toModify = fetched.filter(i => i.main.id > 0);
-
-    // validate drafts
-    validateSupplied.toCreate(toCreate, coll, admRegbit, itype, db);
-    validateSupplied.toModify(toModify, coll, admRegbit, itype, db);
-    // Each invalid item has gotten .validation prop:
-    // {reason: "string", (optional) errors: []}
-
-    // merge back into single array
-    const merged = toCreate.concat(toModify);
-
-    return res.status(200).send(merged);
-  }
-);
+        return res.status(200).send(merged);
+      })
+      .catch(next);
+});
 
 // @route GET /api/operinput/unapproved
 // @desc Fetch unapproved inputs of particular region and particular useremail
@@ -114,7 +184,7 @@ router.get("/unapproved",
 // @route POST /api/operinput/supply
 // @desc Sends operinput to the temporary storage on the database
 // @access Public
-router.post("/supply", 
+router.post("/supply-sqlite", 
   getCollection,
   checkPermissions("supplyWork", "pateikti"), 
   (req, res) => {

@@ -148,7 +148,7 @@ function validateProp(key, draft, model, insert) {
   try {
     value = converter[model[key].type].convert(draft[key]);
   } catch (err) { 
-    return {error: err.msg};
+    return {error: err.message};
   }
 
   // tikrina pagal modelyje nurodytą validatorių
@@ -217,7 +217,7 @@ function validateItem(main, journal, itype, insert) {
     journal: {
       insert: [],
       update: [],
-      delete: journal.delete
+      delete: (journal && journal.delete ? journal.delete : [])
     }
   };
   let result;
@@ -232,7 +232,7 @@ function validateItem(main, journal, itype, insert) {
   }
   
 
-  journal.insert && journal.insert.forEach(journalItem => {
+  journal && journal.insert && journal.insert.forEach(journalItem => {
     result = validateItemPart(journalItem, journalModel, true);    
     if (result.errors) {
       allErrors.push(result.errors);
@@ -241,7 +241,7 @@ function validateItem(main, journal, itype, insert) {
     }
   });
 
-  journal.update && journal.update.forEach(journalItem => {
+  journal && journal.update && journal.update.forEach(journalItem => {
     result = validateItemPart(journalItem, journalModel, false);   
     if (result.errors) {
       allErrors.push(result.errors);
