@@ -237,7 +237,7 @@ describe("Update item", () => {
         }
       })
       .expect(409)
-      .expect(hasMsg("Įrašas nepakeistas, nes skiriasi versijos; galbūt jis ką tik buvo redaguotas kažkieno kito"))
+      .expect(hasMsg("Operacija neatlikta, nes skiriasi versijos; galbūt jis ką tik buvo redaguotas kažkieno kito"))
       expect(res.body.reason).toBe("bad criteria");
   });
 });
@@ -385,5 +385,61 @@ describe("Delete item", () => {
       .set("Authorization", token)
       .query({ itype: "defect", id: 43578, v: vToDelete + 1 })
       .expect(400)
+  });
+});
+
+
+
+
+describe("Update item unquoted", () => {
+  it("should return success", async () => {
+    const res = await request(app)
+      .post("/api/items/update")
+      .set("Authorization", token)
+      .query({ itype: "defect" })
+      .send({
+        main: {id: 43578, regbit: 8, linija: "23", kelias: "7", km: 10, pk: 5, m: 36, siule: "9", meistrija: 11, kkateg: 5, btipas: "60E1", bgamykl: "ENS", bmetai: 1989, v: 3},
+        journal: {
+          insert: [
+            {data: "2019-07-21", oper: 422, dtermin: "2019-07-24", apar: 822, kodas: "27.2", dh: 5, dl: 10, pavoj: "DP", note: "mėginimas7"},
+            {data: "2019-07-22", oper: 423, apar: 823, kodas: "27.3", dh: 6, dl: 11, pavoj: "DP", dtermin: "2019-07-25", note: "mėginimas8"},
+            {data: "2019-07-23", oper: 427, apar: 825, kodas: "53.1", dh: 10, pavoj: "ID", dtermin: "2019-07-24", note: "mėginimas9"}
+          ],
+          update: [
+            {
+              jid: 43578,
+              mainid: 43578,
+              data: "2019-07-16",
+              oper: 423,
+              apar: 823,
+              kodas: "27.2",
+              dh: 5,
+              dl: 10,
+              pavoj: "DP",
+              dtermin: "2019-07-18",
+              note: "mėginimas1"
+            },
+            {
+              jid: 43597,
+              mainid: 43578,
+              data: "2019-07-17",
+              oper: 424,
+              apar: 424,
+              kodas: "27.3",
+              dh: 6,
+              dl: 11,
+              pavoj: "DP",
+              dtermin: "2019-07-20",
+              note: "mėginimas2"
+            }
+          ],
+          delete: [43588]
+        }
+      })
+      .expect(200)
+      .expect(hasMsg("Įrašas sėkmingai redaguotas"));
+      expect(res.body.ok).toBe(1);
+      vToDelete = res.body.item.main.v;
+      expect(res.body.item.journal.length).toBe(8);
   });
 });

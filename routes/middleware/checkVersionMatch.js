@@ -4,7 +4,7 @@ function checkVersionMatch(foundV, mainV) {
       reject({
         status: 409,
         reason: "bad criteria",
-        msg: `Įrašas nepakeistas, nes skiriasi versijos; galbūt jis ką tik buvo redaguotas kažkieno kito`
+        msg: `Operacija neatlikta, nes skiriasi versijos; galbūt jis ką tik buvo redaguotas kažkieno kito`
       });
     } else resolve();
   });

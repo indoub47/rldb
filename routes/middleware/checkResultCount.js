@@ -10,7 +10,7 @@ module.exports.multi = (result, inputCount) => {
       reject({
         status: 500,
         reason: "some error",
-        msg: "Error while inserting"
+        msg: "Serverio klaida"
       });
     } else {
       resolve(result);
