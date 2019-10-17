@@ -33,6 +33,29 @@ module.exports = {
       supplyWork: ["oper"],
       processApproved: ["adm", "superadm"],
       fetchKmvs: ["kmv", "superadm"]
+    },
+    emptyItem: {
+      main: {
+        id: 0,
+        v: 0,
+        meistrija: "X",
+        linija: "X",
+        kelias: "X",
+        km: 0,
+        pk: 0,
+        m: 0,
+        kkateg: "X",
+        btipas: "X",
+        bgamykl: "X",
+        bmetai: 0
+      },
+      journal: {
+        data: '1900-01-01',
+        kodas: 'X',
+        pavoj: 'X',
+        oper: 'X',
+        apar: 'X'
+      }
     }
   },
 
@@ -70,8 +93,25 @@ module.exports = {
       supplyWork: ["oper"],
       processApproved: ["adm", "superadm"],
       fetchKmvs: ["kmv", "superadm"]
+    },
+    emptyItem: {
+      main: {
+        id: 0,
+        linija: "X",
+        kelias: "X",
+        km: 0,
+        pk: 0,
+        m: 0,
+        vbudas: "X",
+        virino: "X",
+        data0: "1900-01-01"
+      },
+      journal: {
+        data: '1900-01-01',
+        pvd: 'X',
+        oper: 'X',
+        apar: 'X'
+      }
     }
   }
 };
-
-

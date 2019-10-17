@@ -1,7 +1,7 @@
 const validate = require("../../validation/validate").validateItemPair;
-const checkSamePlace = require("../middleware/checkSamePlace");
-const checkStillExists = require("../middleware/checkStillExists");
-const checkVersionMatch = require("../middleware/checkVersionMatch");
+const checkSamePlace = require("./checkSamePlace");
+const checkStillExists = require("./checkStillExists");
+const checkVersionMatch = require("./checkVersionMatch");
 
 // validates supplied items
 // jeigu randa klaidų, prideda validation: {reason: "string", errors: [array]}
@@ -10,16 +10,14 @@ const checkVersionMatch = require("../middleware/checkVersionMatch");
 module.exports.toCreate = (item, regbit, config, db) => {
   return new Promise((resolve, reject) => {
     const validated = validate(item.main, item.journal, config.itype, true, "both");
-
     if (validated.errors) {
       // jeigu yra klaidų, prideda validation ir grąžina
       item.validation =  { reason: "draft", errors: validated.errors};
       resolve(item);
     } else {
       // jeigu klaidų nėra, main ir journal pakeičia validintais
-      item.main = validated.main;
-      item.journal = validated.journal;
-
+      item.main = validated.item.main;
+      item.journal = validated.item.journal;
       checkSamePlace(db, config, "insert", item.main, regbit)
         .catch(e => {
           if (e.msg) {
@@ -45,28 +43,25 @@ module.exports.toModify = (item, regbit, config, db) => {
       resolve(item);
     } else {
       // jeigu klaidų nėra, journal pakeičia validintu
-      item.journal = validated.journal;
-      checkStillExists(db, conf.tables.main.name, item.main.id, regbit)
+      item.journal = validated.item.journal;
+      checkStillExists(db, config.tables.main.name, item.main.id, regbit)
         .then(found => checkVersionMatch(found.v, item.main.v))
         // same place netikrina, nes item.main operatorius nekeičia
         //.then(() => checkSamePlace(db, config, "update", item.main, regbit))
         .catch(e => {
           switch(e.status) {
             case 404:
-              result.validation = {reason: "not found"};
+              item.validation = {reason: "not found", errors: ["operacija neatlikta, nes objektas nerastas db"]};
               break;
             case 409:
-              result.validation = {reason: "bad version"};
+              item.validation = {reason: "bad version", errors: ["operacija neatlikta, nes neatitinka objekto versija - jis galėjo būti neseniai redaguotas kažkieno kito"]};
               break;
-            // case 400:
-            //   result.validation = {reason: "same place"};
-            //   break;
+            // not checking for same place, because main wasn't edited here
             default: 
-              console.error(e);
-              result.validation = {reason: "server error", errors: [e.msg]}
+              item.validation = {reason: "server error", errors: [e.msg]}
           }
         })
-        .then(() => resolve(result)) // finally
+        .then(() => resolve(item)) // finally
     }
   });
 }

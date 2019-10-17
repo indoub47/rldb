@@ -1,5 +1,11 @@
 const checkVersionMatch = require('../checkVersionMatch');
 
+const err = {
+        status: 409,
+        reason: "bad criteria",
+        msg: `Operacija neatlikta, nes skiriasi versijos; galbūt jis ką tik buvo redaguotas kažkieno kito`
+      };
+
 test('checkVersionMatch, 1=1, resolves to undefined', () => {
   expect.assertions(1);
 
@@ -28,23 +34,19 @@ test('checkVersionMatch, 15=15, resolves to undefined', () => {
 });
 
 test('checkVersionMatch, 2=1, catches 409 error', () => {
-  expect.assertions(3);
+  expect.assertions(1);
 
   return checkVersionMatch(2, 1)
     .catch(e => {
-      expect(e.status).toBe(409);
-      expect(e.reason).toBe("bad criteria");
-      expect(e.msg.substring(0, 42)).toBe("Operacija neatlikta, nes skiriasi versijos");
+      expect(e).toEqual(err);
     });
 });
 
 test('checkVersionMatch, 0=1, catches 409 error', () => {
-  expect.assertions(3);
+  expect.assertions(1);
 
   return checkVersionMatch(0, 1)
     .catch(e => {
-      expect(e.status).toBe(409);
-      expect(e.reason).toBe("bad criteria");
-      expect(e.msg.substring(0, 42)).toBe("Operacija neatlikta, nes skiriasi versijos");
+      expect(e).toEqual(err);
     });
 });
