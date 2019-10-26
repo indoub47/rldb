@@ -2,7 +2,7 @@ const checkVersionMatch = require('../checkVersionMatch');
 
 const err = {
         status: 409,
-        reason: "bad criteria",
+        reason: "wrong version",
         msg: `Operacija neatlikta, nes skiriasi versijos; galbūt jis ką tik buvo redaguotas kažkieno kito`
       };
 

@@ -2,7 +2,7 @@ const checkResultCount = require('../checkResultCount');
 
 const serverError = {
         status: 500,
-        reason: "some error",
+        reason: "wrong count",
         msg: `Serverio klaida`
       }
 

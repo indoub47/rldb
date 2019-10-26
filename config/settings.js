@@ -32,4 +32,4 @@ exports.RANDOM_ERROR_ON = false;
 exports.DELAY_RANGE = [250, 2000];
 exports.SHOULD_DELAY = true;
 
-exports.LOGIN_EXPIRES = 360000;
+exports.LOGIN_EXPIRES = 36000000;

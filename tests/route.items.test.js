@@ -78,12 +78,12 @@ describe("Search items by location", () => {
       .expect(notIsArray)
       .expect(hasMsg("no collection: undefined"));
     expect(res.body.ok).toBe(0);
-    expect(res.body.reason).toBe("bad criteria");
+    expect(res.body.reason).toBe("no collection");
   });
 });
 
 describe("Search items by location", () => {
-  it("should return no collection", async () => {
+  it("should return no location", async () => {
     const res = await request(app)
       .get("/api/items/search/location")
       .set("Authorization", token.adm8)
@@ -187,7 +187,7 @@ describe("Update item", () => {
         }
       })
       .expect(400)
-      expect(res.body.reason).toBe("bad draft");
+      expect(res.body.reason).toBe("same place");
       expect(res.body.msg.substring(0, 14)).toBe("Šitoje vietoje");
   });
 });
@@ -211,7 +211,7 @@ describe("Update item", () => {
       .expect(404)
       expect(res.body).toEqual({        
         msg: "Operacija neatlikta, nes įrašas ištrintas iš db",
-        reason: "bad criteria",
+        reason: "not found",
         status: 404
       });
   });
@@ -236,7 +236,7 @@ describe("Update item", () => {
       .expect(409)
       expect(res.body).toEqual({        
         msg: "Operacija neatlikta, nes skiriasi versijos; galbūt jis ką tik buvo redaguotas kažkieno kito",
-        reason: "bad criteria",
+        reason: "wrong version",
         status: 409
       });
   });
@@ -351,7 +351,7 @@ describe("Insert item", () => {
       })
       .expect(400)
       expect(!!res.body.reason).toBe(true);
-      expect(res.body.reason).toBe("bad draft");
+      expect(res.body.reason).toBe("same place");
       expect(!!res.body.msg).toBe(true);
       expect(res.body.msg.substring(0, 37)).toBe("Šitoje vietoje jau yra įrašas, jo id:");
   });
@@ -448,12 +448,53 @@ describe("Update item unquoted", () => {
 const objs = require("./operinputObjects");
 
 describe("Supply operinput", () => {
-  it("should return 200ok: 1", async () => {
+  it("should return 200 ok:1", async () => {
     const res = await request(app)
       .post("/api/operinput/supply")
       .set("Authorization", token.oper8)
-      .send({ itype: "defect", input: [objs.create.noError, objs.modify.noError]})
+      .send({ itype: "defect", input: [
+        objs.create.badDraft.badMain,
+        objs.create.badDraft.badJournal,
+        objs.create.badDraft.badMainJournal,
+        objs.create.samePlace,
+        objs.create.incomplete.noMain, //skip
+        objs.create.incomplete.noMainId, //skip
+        objs.create.incomplete.mainIdNotInteger, //skip
+        objs.create.incomplete.noJournal, //skip
+        objs.create.incomplete.noMainJournal, //skip
+        undefined, //skip
+        null, //skip
+        objs.create.noError,
+        objs.modify.badDraft.badMainButOk,
+        objs.modify.badDraft.badJournal,
+        objs.modify.badDraft.badMainJournal,
+        objs.modify.stillExists.nonExists,
+        objs.modify.stillExists.differentRegion,
+        objs.modify.badVersion.veq0,
+        objs.modify.badVersion.vgt0,
+        objs.modify.noError
+      ]})
       .expect(200)
       expect(res.body.ok).toBe(1);
+
+    
+    const res1 = await request(app)
+      .get("/api/operinput/count")
+      .set("Authorization", token.oper8)
+      .query({ itype: "defect"})
+      .expect(200)
+      expect(res1.body.count).toBe("13");
+  });
+});
+
+
+describe("Fetch operinput", () => {
+  it("should return 200 ok:1", async () => {
+    const res = await request(app)
+      .get("/api/operinput/supplied")
+      .set("Authorization", token.adm8)
+      .query({itype: 'defect'})
+      .expect(200);
+      expect(res.body.length).toBe(13);
   });
 });

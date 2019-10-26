@@ -103,7 +103,7 @@ router.post(
         let location = "before transaction";
         let result = { error: null, success: {}};
         
-        checkStillExists(client, tableMain, mainId, main.regbit)
+        checkStillExists(client, itype, mainId, main.regbit)
           .then(succ => checkVersionMatch(succ.v, main.v))
           .then(() => checkSamePlace(client, coll, "update", main, main.regbit))
           .then(() => {

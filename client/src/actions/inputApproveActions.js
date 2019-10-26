@@ -59,6 +59,10 @@ const iApproveProcessFailure = errormsg => ({
 });
 
 export const submitIApprove = (input, itype) => dispatch => {
+  /*
+  input:
+  
+  */
   dispatch(iApproveProcessBegin());
   axios
     .post("/api/operinput/process-approved", {

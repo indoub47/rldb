@@ -4,7 +4,7 @@ function checkPermissions(action, actionName) {
     if (!res.locals.coll.permissions[action].includes(req.user.role)) {
       return res.status(403).send({
         ok: 0,
-        reason: "bad criteria",
+        reason: "no permission",
         msg: `tu neturi teisės ${actionName} ${res.locals.coll.itemNames.Item} įrašų`
       });
     } 

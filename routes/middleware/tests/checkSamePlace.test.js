@@ -71,7 +71,7 @@ test('"checkSamePlace" - update returns same place error', () => {
   return checkSamePlace(pool, config, "update", main, 8)
     .catch(error => {
       expect(error.status).toBe(400)
-      expect(error.reason).toBe("bad draft");
+      expect(error.reason).toBe("same place");
       expect(error.msg.substring(0, 29)).toBe("Šitoje vietoje jau yra įrašas");
     });
 });
@@ -96,7 +96,7 @@ test('"checkSamePlace" - returns same place error', () => {
   return checkSamePlace(pool, config, "insert", main, 8)
     .catch(error => {
       expect(error.status).toBe(400)
-      expect(error.reason).toBe("bad draft");
+      expect(error.reason).toBe("same place");
       expect(error.msg.substring(0, 29)).toBe("Šitoje vietoje jau yra įrašas");
     });
 });

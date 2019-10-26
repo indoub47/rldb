@@ -2,6 +2,7 @@ module.exports = {
   create: {
     badDraft: {
       badMain: {
+        name: "create.badDraft.badMain",
         main: {
           id: -43606, regbit: 8, linija: "23", 
           kelias: "7", km: "xx", pk: 5, m: 36, siule: "9", 
@@ -15,6 +16,7 @@ module.exports = {
         }
       },
       badJournal: {
+        name: "create.badDraft.badJournal",
         main: {
           id: -43606, regbit: 8, linija: "23", 
           kelias: "7", km: 15, pk: 5, m: 36, siule: "9", 
@@ -27,6 +29,7 @@ module.exports = {
         }
       },
       badMainJournal: {
+        name: "create.badDraft.badMainJournal",
         main: {
           id: -43606, regbit: 8, linija: "23", 
           kelias: "7", km: "xx", pk: 5, m: 36, siule: "9", 
@@ -40,6 +43,7 @@ module.exports = {
       }
     },
     samePlace: {
+      name: "create.samePlace",
       main: {
         id: -10495, regbit: 8, linija: "1", kelias: "1", km: 339, 
         pk: 2, m: 9, siule: "0", meistrija: 5, kkateg: 1, btipas: "R65",
@@ -50,7 +54,46 @@ module.exports = {
         dl: 5, pavoj: "D1", dtermin: "2017-01-27"
       }
     },
+    incomplete: {
+      noMain: {
+        journal: {
+          data: "2017-01-12", oper: 427, apar: 828, kodas: "98.2", dh: 60, 
+          dl: 5, pavoj: "D1", dtermin: "2017-01-27"
+        }
+      },
+      noMainId: {        
+        main: {
+          regbit: 8, linija: "1", kelias: "2", km: 331, 
+          pk: 2, m: 9, siule: "0", meistrija: 5, kkateg: 1, btipas: "R65",
+          bgamykl: "T", bmetai: 2010, v: 5
+        },
+        journal: {
+          data: "2017-01-12", oper: 427, apar: 828, kodas: "98.2", dh: 60, 
+          dl: 5, pavoj: "D1", dtermin: "2017-01-27"
+        }
+      },
+      mainIdNotInteger: {        
+        main: {
+          id: "xyz", regbit: 8, linija: "1", kelias: "2", km: 331, 
+          pk: 2, m: 9, siule: "0", meistrija: 5, kkateg: 1, btipas: "R65",
+          bgamykl: "T", bmetai: 2010, v: 5
+        },
+        journal: {
+          data: "2017-01-12", oper: 427, apar: 828, kodas: "98.2", dh: 60, 
+          dl: 5, pavoj: "D1", dtermin: "2017-01-27"
+        }
+      },
+      noJournal: {
+        main: {
+          id: -10495, regbit: 8, linija: "1", kelias: "2", km: 331, 
+          pk: 2, m: 9, siule: "0", meistrija: 5, kkateg: 1, btipas: "R65",
+          bgamykl: "T", bmetai: 2010, v: 5
+        }
+      },
+      noMainJournal: {}
+    },
     noError: {
+      name: "create.noError",
       main: {
         id: -10495, regbit: 8, linija: "1", kelias: "2", km: 331, 
         pk: 2, m: 9, siule: "0", meistrija: 5, kkateg: 1, btipas: "R65",
@@ -66,6 +109,7 @@ module.exports = {
   modify: {    
     badDraft: {
       badMainButOk: {
+        name: "modify.badDraft.badMainButOk",
         main: {
           id: 20, regbit: 8, linija: "23", 
           kelias: "1", km: "xx", pk: 5, m: 36, siule: "9", 
@@ -79,6 +123,7 @@ module.exports = {
         }
       },
       badJournal: {
+        name: "modify.badDraft.badJournal",
         main: {
           id: 20, regbit: 8, linija: "23", 
           kelias: "1", km: 1, pk: 5, m: 50, siule: "0", 
@@ -91,6 +136,7 @@ module.exports = {
         }
       },
       badMainJournal: {
+        name: "modify.badDraft.badMainJournal",
         main: {
           id: 20, regbit: 8, linija: "23", 
           kelias: "1", km: "xx", pk: 5, m: 36, siule: "9", 
@@ -105,6 +151,7 @@ module.exports = {
     },
     stillExists: {
       nonExists: {
+        name: "modify.stillExists.nonExists",
         main: {
           id: 15009, regbit: 8, linija: "1", kelias: "2", km: 331, 
           pk: 2, m: 9, siule: "0", meistrija: 5, kkateg: 1, btipas: "R65",
@@ -116,6 +163,7 @@ module.exports = {
         }
       },
       differentRegion: {
+        name: "modify.stillExists.differentRegion",
         main: {
           id: 30020, regbit: 8, linija: "9", kelias: "1", km: 7, 
           pk: 1, m: 6, siule: "9", meistrija: 4, kkateg: 1, btipas: "R65",
@@ -129,6 +177,7 @@ module.exports = {
     },
     badVersion: {
       veq0: {
+        name: "modify.badVersion.veq0",
         main: {
           id: 15001, regbit: 8, linija: "17", kelias: "1", km: 103, 
           pk: 3, m: 62, siule: "9", meistrija: 14, kkateg: 2, btipas: "R65",
@@ -140,6 +189,7 @@ module.exports = {
         }
       },
       vgt0: {
+        name: "modify.badVersion.vgt0",
         main: {
           id: 10570, regbit: 8, linija: "1", kelias: "1", km: 347, 
           pk: 5, m: 5, siule: "0", meistrija: 5, kkateg: 1, btipas: "R65",
@@ -152,6 +202,7 @@ module.exports = {
       }
     },
     noError: {
+      name: "modify.badVersion.noError",
       main: {
         id: 24560, regbit: 8, linija: "46", kelias: "8", km: 6, 
         pk: 0, m: 6, siule: "9", meistrija: 1, kkateg: 3, btipas: "R65",

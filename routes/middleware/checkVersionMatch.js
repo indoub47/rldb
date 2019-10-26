@@ -1,13 +1,10 @@
-function checkVersionMatch(foundV, mainV) {
-  return new Promise((resolve, reject) => {
+module.exports = (foundV, mainV) =>
+  new Promise((resolve, reject) => {
     if (foundV !== mainV) {
       reject({
         status: 409,
-        reason: "bad criteria",
+        reason: "wrong version",
         msg: `Operacija neatlikta, nes skiriasi versijos; galbūt jis ką tik buvo redaguotas kažkieno kito`
       });
     } else resolve();
   });
-}
-
-module.exports = checkVersionMatch;

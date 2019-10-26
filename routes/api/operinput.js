@@ -20,7 +20,6 @@ const checkSameLocFctr = require("../middleware/checkSamePlace").queryFactory;
 const checkIfExitsFact = require("../middleware/checkStillExists").queryFactory;
 const checkResultCount = require("../middleware/checkResultCount");
 const splitMainJournal = require("../middleware/splitMainJournal");
-const parseMainJournal = require("../middleware/parseMainJournal");
 const validateSupplied = require("../middleware/validateSupplied");
 
 const begin = db.prepare("BEGIN");
@@ -45,6 +44,34 @@ function asTransaction(func) {
 // force to authenticate
 router.use(passport.authenticate("jwt", { session: false }));
 
+// @route GET /api/operinput/count
+// @desc Gets operinput count by itype and region
+// @access Public
+router.get("/count", (req, res, next) => {
+  const itype = req.query.itype;
+  const regbit = req.user.regbit;
+  const table = req.query.table || "oi_supplied";
+
+  const stmt = {
+    text: `SELECT COUNT(*) AS count FROM ${table} WHERE itype = $1 and regbit = $2`,
+    values: [itype, regbit]
+  };
+
+  pool
+    .query(stmt)
+    .then(succ => {
+      if (succ.rowCount < 1) {
+        throw {
+          status: 500,
+          reason: "server error",
+          msg: "negautas įrašų skaičius"
+        };
+      }
+      res.status(200).send({ count: succ.rows[0].count });
+    })
+    .catch(next);
+});
+
 // @route POST /api/operinput/supply
 // @desc Sends operinput to the temporary storage on the database
 // @access Public
@@ -62,6 +89,14 @@ router.post(
       "INSERT INTO oi_supplied (main, journal, itype, oper, regbit, tstamp) VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)";
     const deleteStmt = "DELETE FROM oi_rejected WHERE itype = $1 AND oper = $2";
 
+    // filter to skip importing incomplete objects
+    const inputIsOk = input =>
+      !!input &&
+      input.main &&
+      input.main.hasOwnProperty("id") &&
+      !isNaN(parseInt(input.main.id)) &&
+      input.journal;
+
     pool
       .connect()
       .then(client => {
@@ -70,21 +105,22 @@ router.post(
           .query("BEGIN")
           .then(() => {
             return Promise.all(
-              input.map(inp => {
+              input.filter(inputIsOk).map(inp => {
                 const insertValues = [
-                  JSON.stringify(inp.main),
-                  JSON.stringify(inp.journal),
+                  inp.main,
+                  inp.journal,
                   itype,
                   oper,
                   regbit
                 ];
-                console.log("stmt, values", insertStmt, insertValues);
+                //console.log("text, values: ", insertStmt, insertValues);
                 return client.query(insertStmt, insertValues);
               })
             );
           })
           .then(succ => {
-            return checkResultCount.multi(succ, input.length);
+            //console.log("succ.rows", succ.rows);
+            return checkResultCount.multi(succ, input.filter(inputIsOk).length);
           })
           .then(() => {
             return client.query(deleteStmt, [itype, oper]);
@@ -135,48 +171,35 @@ router.get(
   (req, res, next) => {
     // patikrinti ar turi teisę
     const itype = req.query.itype;
-    const admRegbit = req.user.regbit;
+    const regbit = req.user.regbit;
     const coll = res.locals.coll;
 
     pool
       .connect()
       .then(client => {
-        const stmtText = `SELECT * FROM supplied WHERE itype = $1 AND regbit = $2`;
+        const stmtText = `SELECT * FROM oi_supplied WHERE itype = $1 AND regbit = $2`;
         return client
           .query(stmtText, [itype, regbit])
           .then(succ => {
-            // json to object
-            succ.rows.forEach(item => parseMainJournal(item));
-            // sorting
             let allItems = {
-              err: succ.rows.filter(i => i.validation !== undefined),
               create: succ.rows.filter(i => i.main.id < 0),
               modify: succ.rows.filter(i => i.main.id >= 0)
             };
-            Promise.all(
+            return Promise.all(
               allItems.modify.map(item =>
-                validateSupplied.toModify(item, coll, admRegbit, itype, client)
+                validateSupplied.toModify(item, regbit, coll, client)
               )
             )
               .then(() =>
                 Promise.all(
                   allItems.create.map(item =>
-                    validateSupplied.toCreate(
-                      item,
-                      coll,
-                      admRegbit,
-                      itype,
-                      client
-                    )
+                    validateSupplied.toCreate(item, regbit, coll, client)
                   )
                 )
               )
               .then(() => {
                 // merge them
-                const merged = allItems.create.concat(
-                  allItems.modify,
-                  allItems.err
-                );
+                const merged = allItems.create.concat(allItems.modify);
                 return res.status(200).send(merged);
               })
               .catch(next);
@@ -192,13 +215,239 @@ router.get(
 // @access Public
 router.get(
   "/unapproved",
+  checkPermissions("fetchUnapproved", "matyti grąžintų"),
+  (req, res, next) => {
+    const stmt = {
+      text: "SELECT input FROM oi_rejected WHERE itype = $1 AND oper = $2",
+      values: [req.query.itype, req.user.kodas]
+    };
+
+    pool
+      .query(stmt)
+      .then(succ => res.status(200).send(succ.rows))
+      .catch(next);
+  }
+);
+
+// @route POST /api/operinput/process-approved
+// @desc Depending on the item.action performs different tasks on
+// approved items
+// @access Public
+// @note Items must be taken one by one and if task succeeded, item is being
+// deleted from oi_supplied. If task failed, item is not deleted from oi_supplied
+router.post(
+  "/process-approved",
+  getCollection,
+  checkPermissions("processApproved", "tvarkyti pateiktų"),
+  (req, res, next) => {
+    const itype = req.body.itype;
+    const input = req.body.input;
+    const regbit = req.user.regbit;
+    const coll = res.locals.coll;
+
+    let result = { total: input.length, actions: {} };
+
+    const deleteSupplied = ids =>
+      `DELETE FROM oi_supplied WHERE id IN (${ids})`;
+    const filterByAction = action =>
+      input.filter(item => item.action === action);
+
+    // {
+    //   const ids = .map(item => item.id).join(", ");
+    //   return
+    // };
+
+    pool.connect().then(client => {
+      //return Promise.allSettled(input.map(item => operinputActions[item.action](item, client)}));
+
+      client.query("BEGIN")
+        ///// ACTION - DELETE ////////////
+        // ištrina iš supplied
+        .then(() => {
+          const ids = input
+            .filter(item => item.action === "delete")
+            .map(i => i.id)
+            .join(", ");
+          return client.query(deleteSupplied(ids))
+        })
+        ///// ACTION - RETURN ////////////
+        // insertina į unapproved
+        .then(succ => {
+          const text =
+            "INSERT INTO oi_rejected (item, itype, oper, suppliedid) VALUES ($1, $2, $3, $4) RETURNING suppliedid";
+          return Promise.allSettled(
+            input
+              .filter(item => item.action === "return")
+              .map(item =>
+                client.query(text, [
+                  { main: item.main, journal: item.journal },
+                  itype,
+                  item.oper
+                ])
+              )
+          );
+        })
+        // ištrina iš supplied
+        .then(succ => {
+          const fulfilledIds = succ
+            .filter(result => result.status === "fulfilled")
+            .map(result => result.value.id)
+            .join(", ");
+          return client.query(deleteSupplied(fulfilledIds));
+        })
+
+        ///// ACTION - OK, CREATE NEW RECORD ////////////
+        // validatina, tikrina same place,
+        // kurie tinkami, tuos insertina
+        .then(succ => {
+          // (succ reikalingas būtų, jeigu tikrinti ar visus ištrynė)
+          // filtruoja ir validateina items
+          return input
+            .filter(item => item.action === "ok" && item.main.id < 0)
+            .map(item => {
+              let validated = validate(item.main, item.journal, itype, true, "both");
+              validated.itemId = item.id;
+              return validated; 
+            })
+            .filter(validated => !validated.errors)
+            .map(validated => ({main: validated.item.main, journal: validated.item.journal}))
+            .forEach(item => {
+              item.main.regbit = regbit
+            });
+        })
+        .then(succ => {
+
+        });
+    });
+
+    result.actions.delete = { success: 0, fail: 0 };
+    const transDelete = asTransaction(transactions.deleteSuppliedById(db));
+    input
+      .filter(item => item.action === "delete")
+      .forEach(item => {
+        try {
+          transDelete(item.id); // tik ištrina iš supplied
+          result.actions.delete.success++;
+        } catch (err) {
+          console.error(err);
+          result.actions.delete.fail++;
+        }
+      });
+
+    ///// ACTION - RETURN ////////////
+    // insertina į unapproved,
+    // ištrina iš supplied
+    result.actions.return = { success: 0, fail: 0 };
+    const returnToOper = asTransaction(transactions.returnToOper(db));
+
+    input
+      .filter(item => item.action === "return")
+      .forEach(item => {
+        try {
+          returnToOper(item);
+          result.actions.return.success++;
+        } catch (err) {
+          console.error(err);
+          result.actions.return.fail++;
+        }
+      });
+
+    ///// ACTION - OK, CREATE NEW RECORD ////////////
+    result.actions.createOK = { success: 0, fail: 0 };
+    const sameLocation = checkSameLocFctr(db, coll, "insert");
+    const createRecord = asTransaction(transactions.createRecord(itype, db));
+    input
+      .filter(item => item.action === "ok" && item.main.id < 0)
+      .forEach(item => {
+        if (
+          processApproved.createNewRecord(
+            item,
+            itype,
+            regbit,
+            validate,
+            sameLocation,
+            createRecord
+          )
+        ) {
+          result.actions.createOK.success++;
+        } else {
+          result.actions.createOK.fail++;
+        }
+      });
+
+    ///// ACTION - OK, MODIFY EXISTING RECORD ////////////
+    result.actions.modifyOK = { success: 0, fail: 0 };
+    const ifExists = checkIfExitsFact(db, coll);
+    const modifyRecord = asTransaction(transactions.modifyRecord(itype, db));
+    input
+      .filter(item => item.action === "ok" && item.main.id > 0)
+      .forEach(item => {
+        if (
+          processApproved.modifyExistingRecord(
+            item,
+            itype,
+            regbit,
+            validate,
+            ifExists,
+            modifyRecord
+          )
+        ) {
+          result.actions.modifyOK.success++;
+        } else {
+          result.actions.modifyOK.fail++;
+        }
+      });
+
+    //res.status(200).send(result);
+    const stmtText = `SELECT * FROM supplied WHERE itype = ? AND regbit = ?`;
+    let fetched = null;
+
+    try {
+      fetched = db.prepare(stmtText).all(itype, regbit);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send(error);
+    }
+
+    //console.log("fetched", fetched);
+
+    if (fetched.length < 1) return res.status(200).send([]);
+
+    // json to object
+    fetched.forEach(item => parseMainJournal(item));
+
+    //console.log("parsed", fetched);
+
+    // Visus įrašus padalinti į kuriamus naujus ir modifikuojamus.
+    // Modifikuojamų id teigiamas, kuriamų naujų id neigiamas.
+    let toCreate = fetched.filter(i => i.main.id < 0);
+    let toModify = fetched.filter(i => i.main.id > 0);
+
+    // validate drafts
+    validateSupplied.toCreate(toCreate, coll, regbit, itype, db);
+    validateSupplied.toModify(toModify, coll, regbit, itype, db);
+    // Each invalid item has gotten .validation prop:
+    // {reason: "string", (optional) errors: []}
+
+    // merge back into single array
+    const merged = toCreate.concat(toModify);
+
+    return res.status(200).send(merged);
+  }
+);
+
+// @route GET /api/operinput/unapproved
+// @desc Fetch unapproved inputs of particular region and particular useremail
+// @access Public
+router.get(
+  "/unapproved_sqlite",
   getCollection,
   checkPermissions("fetchUnapproved", "matyti grąžintų"),
   (req, res) => {
     const itype = req.query.itype;
     const oper = req.user.kodas;
 
-    const stmtText = `SELECT input FROM unapproved WHERE itype = ? AND oper = ?`;
+    const stmtText = `SELECT input FROM oi_rejected WHERE itype = ? AND oper = ?`;
     try {
       const items = db.prepare(stmtText).all(itype, oper);
       return res.status(200).send(items);
@@ -261,7 +510,7 @@ router.post(
 // approved items
 // @access Public
 router.post(
-  "/process-approved",
+  "/process-approved-sqlite",
   getCollection,
   checkPermissions("processApproved", "tvarkyti pateiktų"),
   (req, res) => {

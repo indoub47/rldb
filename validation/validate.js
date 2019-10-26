@@ -258,7 +258,7 @@ function validateItem(main, journal, itype, insert) {
   @desc Patikrina visą objektą, kuriame yra šios dalys:
   main - {... visos main props},
   journal - {... visos journal props}
-  @return Grąžina {item: normalizuotą objektą, tos pačios struktūros, kokį gavo} 
+  @return Grąžina {item: {main: /normalizuotas main/, journal: /normalizuotas journal/}} 
   arba errors - [{key: keyname, id: main.id, msg: error message}]
  */
 function validateItemPair(main, journal, itype, insert, whichPart="both") {
@@ -295,7 +295,6 @@ function validateItemPair(main, journal, itype, insert, whichPart="both") {
   }
   
   if (allErrors.length) return {errors: [].concat(...allErrors)}; 
-  // (since Edge doesn't support arr.flat())
 
   return {item: resultItem};  
 }

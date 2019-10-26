@@ -11,7 +11,7 @@ test('"validateSupplied.toCreate" - bad main', () => {
   expect.assertions(4);
   return validateSupplied.toCreate(obj, rb, config, pool).then(() => {
     expect(obj.validation).toBeDefined();
-    expect(obj.validation.reason).toBe("draft");
+    expect(obj.validation.reason).toBe("bad draft");
     expect(obj.validation.errors).toBeDefined();
     expect(obj.validation.errors.length).toBe(2);
   });
@@ -22,7 +22,7 @@ test('"validateSupplied.toCreate" - bad journal', () => {
   expect.assertions(4);
   return validateSupplied.toCreate(obj, rb, config, pool).then(() => {
     expect(obj.validation).toBeDefined();
-    expect(obj.validation.reason).toBe("draft");
+    expect(obj.validation.reason).toBe("bad draft");
     expect(obj.validation.errors).toBeDefined();
     expect(obj.validation.errors.length).toBe(3);
   });
@@ -33,7 +33,7 @@ test('"validateSupplied.toCreate" - bad main and journal', () => {
   expect.assertions(4);
   return validateSupplied.toCreate(obj, rb, config, pool).then(() => {
     expect(obj.validation).toBeDefined();
-    expect(obj.validation.reason).toBe("draft");
+    expect(obj.validation.reason).toBe("bad draft");
     expect(obj.validation.errors).toBeDefined();
     expect(obj.validation.errors.length).toBe(6);
   });
@@ -78,7 +78,7 @@ test('"validateSupplied.toModify" - bad journal', () => {
   expect.assertions(4);
   return validateSupplied.toModify(obj, rb, config, pool).then(() => {
     expect(obj.validation).toBeDefined();
-    expect(obj.validation.reason).toBe("draft");
+    expect(obj.validation.reason).toBe("bad draft");
     expect(obj.validation.errors).toBeDefined();
     expect(obj.validation.errors.length).toBe(3);
   });
@@ -89,7 +89,7 @@ test('"validateSupplied.toModify" - bad main and journal', () => {
   expect.assertions(4);
   return validateSupplied.toModify(obj, rb, config, pool).then(() => {
     expect(obj.validation).toBeDefined();
-    expect(obj.validation.reason).toBe("draft");
+    expect(obj.validation.reason).toBe("bad draft");
     expect(obj.validation.errors).toBeDefined();
     expect(obj.validation.errors.length).toBe(4);
   });
@@ -101,7 +101,7 @@ test('"validateSupplied.toModify" - non exists', () => {
   return validateSupplied.toModify(obj, rb, config, pool).then(() => {
     expect(obj.validation).toBeDefined();
     expect(obj.validation.reason).toBe("not found");
-    expect(obj.validation.errors).toEqual(["operacija neatlikta, nes objektas nerastas db"]);
+    expect(obj.validation.errors).toEqual(["Operacija neatlikta, nes įrašas ištrintas iš db"]);
   });
 });
 
@@ -111,7 +111,7 @@ test('"validateSupplied.toModify" - different region', () => {
   return validateSupplied.toModify(obj, rb, config, pool).then(() => {
     expect(obj.validation).toBeDefined();
     expect(obj.validation.reason).toBe("not found");
-    expect(obj.validation.errors).toEqual(["operacija neatlikta, nes objektas nerastas db"]);
+    expect(obj.validation.errors).toEqual(["Operacija neatlikta, nes įrašas ištrintas iš db"]);
   });
 });
 
@@ -120,8 +120,8 @@ test('"validateSupplied.toModify" - bad version v_eq_0', () => {
   expect.assertions(3);
   return validateSupplied.toModify(obj, rb, config, pool).then(() => {
     expect(obj.validation).toBeDefined();
-    expect(obj.validation.reason).toBe("bad version");
-    expect(obj.validation.errors).toEqual(["operacija neatlikta, nes neatitinka objekto versija - jis galėjo būti neseniai redaguotas kažkieno kito"]);
+    expect(obj.validation.reason).toBe("wrong version");
+    expect(obj.validation.errors).toEqual(["Operacija neatlikta, nes skiriasi versijos; galbūt jis ką tik buvo redaguotas kažkieno kito"]);
   });
 });
 
@@ -130,8 +130,8 @@ test('"validateSupplied.toModify" - bad version v_gt_0', () => {
   expect.assertions(3);
   return validateSupplied.toModify(obj, rb, config, pool).then(() => {
     expect(obj.validation).toBeDefined();
-    expect(obj.validation.reason).toBe("bad version");
-    expect(obj.validation.errors).toEqual(["operacija neatlikta, nes neatitinka objekto versija - jis galėjo būti neseniai redaguotas kažkieno kito"]);
+    expect(obj.validation.reason).toBe("wrong version");
+    expect(obj.validation.errors).toEqual(["Operacija neatlikta, nes skiriasi versijos; galbūt jis ką tik buvo redaguotas kažkieno kito"]);
   });
 });
 

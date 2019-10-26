@@ -217,17 +217,33 @@ module.exports.simpleInsertStmt_SQLITE = (tableName, draft, excludeFields) => {
     .join(", ")})`;
 };
 
-module.exports.DELETE_FROM_SUPPLIED_stmt = db =>
+module.exports.DELETE_FROM_SUPPLIED_stmt_SQLITE = db =>
   db.prepare("DELETE FROM supplied WHERE regbit = ? AND itype = ?");
 
-module.exports.INSERT_INTO_UNAPPROVED_stmt = db =>
-  db.prepare(
-    "INSERT INTO unapproved (input, itype, oper) VALUES (@input, @itype, @oper)"
-  );
+module.exports.DELETE_SUPPLIED_stmt = (regbit, itype, id) => ({
+  text: "DELETE FROM supplied WHERE regbit = $1 AND itype = $2 AND id = $3",
+  values: [regbit, itype, id]
+});
 
-module.exports.SHIFT_MAIN_V_stmt = (itype, db) => {
+module.exports.SHIFT_MAIN_V_stmt_SQLITE = (itype, db) => {
   const tableName = collections[itype].tables.main.name;
   return db.prepare(`UPDATE ${tableName} SET v = v + 1 WHERE id = ?`);
+};
+
+module.exports.FETCH_MAIN_stmt = (id, itype, regbit) => {
+  const tableName = collections[itype].tables.main.name;
+  return {
+    text: `SELECT * FROM ${tableName} WHERE id = $1 AND regbit = $2`,
+    values: [id, regbit]
+  };
+}
+
+module.exports.SHIFT_MAIN_V_stmt = (id, itype) => {
+  const tableName = collections[itype].tables.main.name;
+  return {
+    text: `UPDATE ${tableName} SET v = v + 1 WHERE id = $1`,
+    values: [id]
+  };
 };
 
 module.exports.SEARCH_ITEMS_BY_LOCATION_stmt = (query, regbit, collection) => {
@@ -262,11 +278,16 @@ module.exports.DELETE_FROM_SUPPLIED_BY_ID_stmt = db => {
   return db.prepare("DELETE FROM supplied WHERE id = ?");
 };
 
-module.exports.INSERT_INTO_UNAPPROVED_stmt = db => {
+module.exports.INSERT_INTO_UNAPPROVED_stmt_SQLITE = db => {
   return db.prepare(
     "INSERT INTO unapproved (oper, itype, input) VALUES (?, ?, ?)"
   );
 };
+
+module.exports.INSERT_OI_REJECTED_stmt = (oper, itype, input) => ({
+  text: "INSERT INTO oi_rejected (oper, itype, input) VALUES ($1, $2, $3)",
+  values: [oper, itype, input]
+})
 
 module.exports.QUERY_IF_ITEM_EXISTS_stmtFactory = coll =>
   `SELECT * FROM ${coll.tables.main.name} WHERE id = $1 AND regbit = $2`;

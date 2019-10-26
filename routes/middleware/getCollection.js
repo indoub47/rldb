@@ -5,7 +5,7 @@ function getCollection(req, res, next) {
   const coll = collectionOptions[itype];
   if (!coll) return res.status(400).send({
     ok: 0,
-    reason: "bad criteria",
+    reason: "no collection",
     msg: "no collection: " + itype
   });
   //let locals = res.locals || {};
